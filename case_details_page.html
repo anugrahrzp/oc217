@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case Details - R4lQTiJaYdJ526</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background-color: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .breadcrumb {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .breadcrumb a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .case-id {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background-color: #fef3c7;
+            color: #92400e;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .send-comm-btn {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .send-comm-btn:hover {
+            background-color: #2563eb;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 60px;
+            width: 260px;
+            background-color: #fff;
+            border-right: 1px solid #e0e0e0;
+            height: calc(100vh - 60px);
+            overflow-y: auto;
+        }
+
+        .main-content {
+            margin-left: 280px;
+        }
+
+        .card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .card-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .expand-icon {
+            color: #666;
+            font-size: 18px;
+        }
+
+        .card-content {
+            padding: 20px;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .detail-value {
+            font-size: 14px;
+            color: #333;
+        }
+
+        .detail-value a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .detail-value a:hover {
+            text-decoration: underline;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background-color: #f9fafb;
+        }
+
+        th {
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        td {
+            padding: 16px;
+            font-size: 14px;
+            color: #333;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        td a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        td a:hover {
+            text-decoration: underline;
+        }
+
+        .status-internal {
+            color: #ef4444;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .collapsed .card-content {
+            display: none;
+        }
+
+        /* Modal styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background-color: white;
+            border-radius: 12px;
+            width: 500px;
+            max-width: 90%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .modal-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #dbeafe;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #3b82f6;
+            font-size: 20px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-message {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .modal-highlight {
+            background-color: #f0f9ff;
+            border-left: 3px solid #3b82f6;
+            padding: 12px 16px;
+            border-radius: 4px;
+            margin-top: 16px;
+        }
+
+        .modal-highlight-label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .modal-highlight-value {
+            font-size: 14px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .btn-secondary {
+            background-color: #fff;
+            color: #666;
+            border: 1px solid #d1d5db;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background-color: #f9fafb;
+            border-color: #9ca3af;
+        }
+
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+
+        .source-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background-color: #dbeafe;
+            color: #1e40af;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .source-badge-icon {
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <span class="breadcrumb">
+                <a href="/admin/qc-cases">All cases</a> / Case - <span class="case-id">R4lQTiJaYdJ526</span>
+            </span>
+            <span class="status-badge">PENDING_WITH_MERCHANT_OR_SALES</span>
+        </div>
+        <button class="send-comm-btn" id="sendCommunicationBtn">Send Communication</button>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <!-- Sidebar content can be added here -->
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container">
+            <!-- Case Details Card -->
+            <div class="card">
+                <div class="card-header" onclick="toggleCard(this)">
+                    <h3>Case Details</h3>
+                    <span class="expand-icon">▼</span>
+                </div>
+                <div class="card-content">
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">ID</span>
+                            <span class="detail-value">R4lQTiJaYdJ526</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">MID</span>
+                            <span class="detail-value">
+                                <a href="#">GtjTEOlQJJBBX</a>
+                            </span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Created At</span>
+                            <span class="detail-value">13th Aug, 2025 02:38 PM</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Status</span>
+                            <span class="detail-value">PENDING_WITH_MERCHANT_OR_SALES</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Updated At</span>
+                            <span class="detail-value">13th Aug, 2025 02:45 PM</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Request Source</span>
+                            <span class="detail-value">
+                                <span class="source-badge">
+                                    <span class="source-badge-icon">👤</span>
+                                    POC - Rajesh Kumar (rajesh.kumar@razorpay.com)
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- IIR Table -->
+                    <div class="table-container" style="margin-top: 24px;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>IIR ID</th>
+                                    <th>Merchant ID</th>
+                                    <th>Gateway</th>
+                                    <th>Method</th>
+                                    <th>Created At</th>
+                                    <th>Updated At</th>
+                                    <th>IIR Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><a href="#">R4lQTdYVxp0Tq</a></td>
+                                    <td>GtjTEOlQJJBBX</td>
+                                    <td>wallet_amazonpay</td>
+                                    <td>wallet</td>
+                                    <td>13th Aug, 2025 02:38 PM</td>
+                                    <td>13th Aug, 2025 02:45 PM</td>
+                                    <td><span class="status-internal">action_required_internal</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Merchant Details Card -->
+            <div class="card collapsed">
+                <div class="card-header" onclick="toggleCard(this)">
+                    <h3>Merchant Details</h3>
+                    <span class="expand-icon">▶</span>
+                </div>
+                <div class="card-content">
+                    <!-- Merchant details content -->
+                </div>
+            </div>
+
+            <!-- Additional Onboarding Details Card -->
+            <div class="card collapsed">
+                <div class="card-header" onclick="toggleCard(this)">
+                    <h3>Additional Onboarding Details</h3>
+                    <span class="expand-icon">▶</span>
+                </div>
+                <div class="card-content">
+                    <!-- Additional onboarding details content -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- POC Communication Modal -->
+    <div class="modal-overlay" id="pocModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-icon">ℹ️</div>
+                <h2 class="modal-title">POC Communication Alert</h2>
+            </div>
+            <div class="modal-body">
+                <p class="modal-message">
+                    This MIR request was raised by a <strong>POC (Key Account Manager)</strong> on behalf of the merchant.
+                    The ARI communication will be sent to the POC instead of the merchant directly.
+                </p>
+                <div class="modal-highlight">
+                    <div class="modal-highlight-label">POC DETAILS</div>
+                    <div class="modal-highlight-value">Rajesh Kumar</div>
+                    <div style="font-size: 13px; color: #666; margin-top: 4px;">rajesh.kumar@razorpay.com</div>
+                </div>
+                <div class="modal-highlight" style="margin-top: 12px;">
+                    <div class="modal-highlight-label">MERCHANT</div>
+                    <div class="modal-highlight-value">GtjTEOlQJJBBX</div>
+                </div>
+                <p class="modal-message" style="margin-top: 16px; font-size: 13px; color: #666;">
+                    The POC will coordinate with the merchant to gather required information and respond to the ARI.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn-primary" onclick="sendToPOC()">Send to POC</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle card expand/collapse
+        function toggleCard(header) {
+            const card = header.parentElement;
+            const icon = header.querySelector('.expand-icon');
+
+            card.classList.toggle('collapsed');
+
+            if (card.classList.contains('collapsed')) {
+                icon.textContent = '▶';
+            } else {
+                icon.textContent = '▼';
+            }
+        }
+
+        // Send Communication Button Click Handler
+        document.getElementById('sendCommunicationBtn').addEventListener('click', function() {
+            // Check MIR source (simulated - in real app, this would come from API)
+            const mirSource = 'POC'; // Can be 'MERCHANT' or 'POC'
+
+            if (mirSource === 'POC') {
+                // Show POC confirmation modal
+                document.getElementById('pocModal').classList.add('active');
+            } else {
+                // Directly send to merchant (existing flow)
+                sendToMerchant();
+            }
+        });
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('pocModal').classList.remove('active');
+        }
+
+        // Send to POC
+        function sendToPOC() {
+            console.log('Sending ARI communication to POC...');
+
+            // API call to send email/WhatsApp to POC
+            // Example:
+            // fetch('/api/communication/ari/send', {
+            //     method: 'POST',
+            //     body: JSON.stringify({
+            //         case_id: 'R4lQTiJaYdJ526',
+            //         recipient_type: 'POC',
+            //         communication_channels: ['EMAIL', 'WHATSAPP']
+            //     })
+            // })
+
+            alert('ARI communication sent to POC: Rajesh Kumar (rajesh.kumar@razorpay.com)');
+            closeModal();
+        }
+
+        // Send to Merchant (existing flow)
+        function sendToMerchant() {
+            console.log('Sending ARI communication to Merchant...');
+
+            // API call to send email/WhatsApp to merchant
+            alert('ARI communication sent to Merchant');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('pocModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
