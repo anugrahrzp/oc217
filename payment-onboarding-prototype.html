@@ -757,6 +757,49 @@
             font-weight: 600;
             margin-bottom: 16px;
         }
+        .info-icon {
+            position: relative;
+            display: inline-block;
+            margin-left: 5px;
+            cursor: help;
+            color: #718096; /* A subtle grey */
+            font-size: 0.9em;
+        }
+
+        .info-icon .tooltip-text {
+            visibility: hidden;
+            width: 220px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -110px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+            font-weight: 400;
+        }
+
+        .info-icon .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #555 transparent transparent transparent;
+        }
+
+        .info-icon:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -876,13 +919,16 @@
                         </p>
                     </div>
                     <div class="modal-body">
-                        <div style="background: #eef2ff; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea;">
+                        <div style="background: #eef2ff; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea; margin-bottom: 20px;">
                             <p style="color: #3730a3; margin-bottom: 12px; font-weight: 600;">Why is this required?</p>
                             <p style="color: #4c51bf; font-size: 14px; line-height: 1.6; margin: 0;">
                                 SEBI circular (SEBI/HO/DEPA-II/DEPA-II_SRG/P/CIR/2025/86) mandates that
                                 all regulated intermediaries must use validated UPI IDs with @valid handles
                                 for payment collection to ensure compliance and security.
                             </p>
+                        </div>
+                        <div class="info-note">
+                            <p><strong>Important:</strong> While you can get a VPA from any bank on the SEBI portal, Razorpay currently only supports VPAs from **HDFC, ICICI, and Axis** banks.</p>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -971,17 +1017,41 @@
                     <div class="modal-body">
                         <form id="upiDetailsForm">
                             <div class="form-group">
+                                <label>Select your VPA's Bank <span class="required">*</span></label>
+                                <div class="radio-group" id="bankSelection">
+                                    <div class="radio-option">
+                                        <input type="radio" id="hdfc" name="bank" value="hdfc" onchange="handleBankSelection()">
+                                        <label for="hdfc">HDFC Bank</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="icici" name="bank" value="icici" onchange="handleBankSelection()">
+                                        <label for="icici">ICICI Bank</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="axis" name="bank" value="axis" onchange="handleBankSelection()">
+                                        <label for="axis">Axis Bank</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
                                 <label>
                                     VPA (UPI ID) <span class="required">*</span>
+                                    <span class="info-icon">ℹ️
+                                        <span class="tooltip-text">You might have gotten your VPA from the SEBI portal. Only the VPA provided to SEBI needs to be entered here.</span>
+                                    </span>
                                 </label>
-                                <input type="text" id="vpaInput" placeholder="yourbusiness.mf@validhdfc" oninput="validateVPA()">
-                                <p class="helper-text">Example: yourbusiness.mf@validhdfc</p>
-                                <p class="error-text" id="vpaError">VPA must use validated @valid handle</p>
+                                <input type="text" id="vpaInput" placeholder="Select a bank first" oninput="validateVPA()" disabled>
+                                <p class="helper-text" id="vpaHelperText">Example: yourbusiness.mf@validhdfc</p>
+                                <p class="error-text" id="vpaError">VPA must use a valid handle for the selected bank.</p>
                             </div>
 
                             <div class="form-group">
                                 <label>
                                     Settlement Account Number <span class="required">*</span>
+                                    <span class="info-icon">ℹ️
+                                        <span class="tooltip-text">Only the Settlement Account Number you provided to SEBI needs to be entered here.</span>
+                                    </span>
                                 </label>
                                 <input type="text" id="accountInput" placeholder="50100123456789" oninput="validateAccount()">
                                 <p class="error-text" id="accountError">Please enter a valid account number</p>
@@ -990,6 +1060,9 @@
                             <div class="form-group">
                                 <label>
                                     IFSC Code <span class="required">*</span>
+                                    <span class="info-icon">ℹ️
+                                        <span class="tooltip-text">Only the IFSC Code you provided to SEBI needs to be entered here.</span>
+                                    </span>
                                 </label>
                                 <input type="text" id="ifscInput" placeholder="HDFC0001234" oninput="validateIFSC()" maxlength="11">
                                 <p class="helper-text">11-character IFSC code from approved syndicate banks</p>
@@ -1111,22 +1184,45 @@
             validateForm();
         }
 
+        function handleBankSelection() {
+            const vpaInput = document.getElementById('vpaInput');
+            const selectedBank = document.querySelector('input[name="bank"]:checked').value;
+            const vpaHelperText = document.getElementById('vpaHelperText');
+
+            vpaInput.disabled = false;
+            vpaInput.placeholder = `yourbusiness.mf@valid${selectedBank}`;
+            vpaHelperText.textContent = `Example: yourbusiness.mf@valid${selectedBank}`;
+            validateVPA(); // Re-validate VPA when bank selection changes
+        }
+
         function validateVPA() {
             const vpaInput = document.getElementById('vpaInput');
             const vpaGroup = vpaInput.closest('.form-group');
-            const vpa = vpaInput.value.trim();
+            const vpa = vpaInput.value.trim().toLowerCase();
+            const vpaError = document.getElementById('vpaError');
+            const selectedBank = document.querySelector('input[name="bank"]:checked');
             const iciciMidGroup = document.getElementById('iciciMidGroup');
             const iciciInfo = document.getElementById('iciciInfo');
 
-            // Check if VPA contains @valid
-            if (vpa && !vpa.includes('@valid')) {
+            if (!selectedBank) {
                 vpaGroup.classList.add('error');
+                vpaError.textContent = 'Please select a bank first.';
+                validateForm();
+                return;
+            }
+
+            const bankValue = selectedBank.value;
+            const isValid = vpa.includes('@valid') && vpa.includes(bankValue);
+
+            if (vpa && !isValid) {
+                vpaGroup.classList.add('error');
+                vpaError.textContent = `VPA does not seem to match the selected bank (${bankValue}). We only support HDFC, AXIS, and ICICI.`;
             } else {
                 vpaGroup.classList.remove('error');
             }
 
             // Show ICICI MID field if VPA contains @validicici
-            if (vpa.includes('@validicici')) {
+            if (vpa.includes('icici')) {
                 iciciMidGroup.style.display = 'block';
                 iciciInfo.style.display = 'block';
             } else {
@@ -1168,7 +1264,8 @@
         }
 
         function validateForm() {
-            const vpa = document.getElementById('vpaInput').value.trim();
+            const selectedBank = document.querySelector('input[name="bank"]:checked');
+            const vpa = document.getElementById('vpaInput').value.trim().toLowerCase();
             const account = document.getElementById('accountInput').value.trim();
             const ifsc = document.getElementById('ifscInput').value.trim();
             const iciciMidInput = document.getElementById('iciciMidInput');
@@ -1176,10 +1273,11 @@
             const submitBtn = document.getElementById('submitBtn');
 
             // Basic required field validation
+            const bankSelected = selectedBank != null;
             const requiredFieldsFilled = vpa && account && ifsc;
 
-            // VPA must contain @valid
-            const vpaValid = vpa.includes('@valid');
+            // VPA must contain @valid and match selected bank
+            const vpaValid = bankSelected && vpa.includes('@valid') && vpa.includes(selectedBank.value);
 
             // Account validation
             const accountValid = account.length >= 9 && account.length <= 18 && /^\d+$/.test(account);
@@ -1189,7 +1287,7 @@
 
             // ICICI MID validation (if required)
             let iciciMidValid = true;
-            if (vpa.includes('@validicici')) {
+            if (vpa.includes('icici')) {
                 iciciMidValid = iciciMid.length > 0;
                 const iciciMidGroup = document.getElementById('iciciMidGroup');
                 if (!iciciMidValid && iciciMid === '') {
@@ -1204,7 +1302,7 @@
             const softNudgeChecked = document.getElementById('softNudgeCheckbox').checked;
 
             // Enable submit button if all validations pass
-            submitBtn.disabled = !(requiredFieldsFilled && vpaValid && accountValid && ifscValid && iciciMidValid && softNudgeChecked);
+            submitBtn.disabled = !(bankSelected && requiredFieldsFilled && vpaValid && accountValid && ifscValid && iciciMidValid && softNudgeChecked);
         }
 
         function submitForm() {
@@ -1228,6 +1326,10 @@
             document.getElementById('upiDetailsForm').reset();
             document.getElementById('completionCheckbox').checked = false;
             document.getElementById('softNudgeCheckbox').checked = false;
+            document.querySelectorAll('input[name="bank"]').forEach(radio => radio.checked = false);
+            document.getElementById('vpaInput').disabled = true;
+            document.getElementById('vpaInput').placeholder = 'Select a bank first';
+            document.getElementById('vpaHelperText').textContent = 'Example: yourbusiness.mf@validhdfc';
             document.querySelectorAll('.form-group').forEach(group => {
                 group.classList.remove('error');
             });
