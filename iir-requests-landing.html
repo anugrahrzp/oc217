@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case - RhA4w7EIr8O48K - Admin Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f7fafc;
+            color: #2d3748;
+            line-height: 1.5;
+        }
+
+        /* Top Header */
+        .top-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background-color: white;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a202c;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #718096;
+        }
+
+        .breadcrumb a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .status-badge.open {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-badge.open::before {
+            background-color: #065f46;
+        }
+
+        .status-badge.requested {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-badge.requested::before {
+            background-color: #92400e;
+        }
+
+        .status-badge.approved {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-badge.approved::before {
+            background-color: #065f46;
+        }
+
+        .status-badge.rejected {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-badge.rejected::before {
+            background-color: #991b1b;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        /* Main Layout */
+        .main-layout {
+            display: flex;
+            margin-top: 60px;
+            min-height: calc(100vh - 60px);
+        }
+
+        /* Left Sidebar */
+        .left-sidebar {
+            width: 280px;
+            background-color: white;
+            border-right: 1px solid #e2e8f0;
+            padding: 24px 0;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 24px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #2d3748;
+            transition: background-color 0.2s;
+        }
+
+        .section-header:hover {
+            background-color: #f7fafc;
+        }
+
+        .section-header.collapsed {
+            color: #718096;
+        }
+
+        .expand-icon {
+            font-size: 12px;
+            color: #a0aec0;
+            transition: transform 0.2s;
+        }
+
+        .section-header.collapsed .expand-icon {
+            transform: rotate(-90deg);
+        }
+
+        .section-content {
+            padding: 0 24px 16px;
+        }
+
+        .section-content.hidden {
+            display: none;
+        }
+
+        .detail-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #f7fafc;
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-size: 11px;
+            color: #718096;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .detail-value {
+            font-size: 13px;
+            color: #2d3748;
+            font-weight: 500;
+        }
+
+        .detail-value a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .detail-value a:hover {
+            text-decoration: underline;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 24px;
+            overflow-x: auto;
+        }
+
+        .content-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background-color: #f7fafc;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px 16px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 14px 16px;
+            font-size: 13px;
+            color: #2d3748;
+            border-bottom: 1px solid #f7fafc;
+        }
+
+        tbody tr:hover {
+            background-color: #f7fafc;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        td a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        td a:hover {
+            text-decoration: underline;
+        }
+
+        /* Terminal Type Badge */
+        .terminal-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .terminal-badge.ds {
+            background-color: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .terminal-badge.non-ds {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .left-sidebar {
+                position: fixed;
+                left: -280px;
+                top: 60px;
+                height: calc(100vh - 60px);
+                z-index: 90;
+                transition: left 0.3s;
+            }
+
+            .left-sidebar.open {
+                left: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Header -->
+    <div class="top-header">
+        <div class="header-left">
+            <div class="logo">
+                🏢 Razorpay
+            </div>
+            <div class="breadcrumb">
+                <a href="#">🏠</a>
+                <span>/</span>
+                <a href="#">All cases</a>
+                <span>/</span>
+                <span>Case - RhA4w7EIr8O48K</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <span class="status-badge open">OPEN</span>
+            <div class="user-section">
+                <div class="user-avatar">R</div>
+                <span style="font-size: 13px; color: #4a5568;">Work</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="main-layout">
+        <!-- Left Sidebar -->
+        <div class="left-sidebar">
+            <!-- Case Details Section -->
+            <div class="sidebar-section">
+                <div class="section-header">
+                    <span>Case Details</span>
+                    <span class="expand-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="detail-item">
+                        <div class="detail-label">ID</div>
+                        <div class="detail-value">RhA4w7EIr8O48K</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">MID</div>
+                        <div class="detail-value">
+                            <a href="#">Rglg1taogLY2pd</a>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Created At</div>
+                        <div class="detail-value">18th Nov, 2025 03:27 PM</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Status</div>
+                        <div class="detail-value">
+                            <span class="status-badge open">OPEN</span>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Updated At</div>
+                        <div class="detail-value">18th Nov, 2025 03:27 PM</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Merchant Details Section -->
+            <div class="sidebar-section">
+                <div class="section-header collapsed">
+                    <span>Merchant Details</span>
+                    <span class="expand-icon">▼</span>
+                </div>
+                <div class="section-content hidden">
+                    <div class="detail-item">
+                        <div class="detail-label">Merchant ID</div>
+                        <div class="detail-value">
+                            <a href="#">Rglg1taogLY2pd</a>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Business Name</div>
+                        <div class="detail-value">ABC Financial Services Ltd</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Business Category</div>
+                        <div class="detail-value">Financial Services - Mutual Funds</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Onboarding Details Section -->
+            <div class="sidebar-section">
+                <div class="section-header collapsed">
+                    <span>Additional Onboarding Details</span>
+                    <span class="expand-icon">▼</span>
+                </div>
+                <div class="section-content hidden">
+                    <div class="detail-item">
+                        <div class="detail-label">SEBI Registration</div>
+                        <div class="detail-value">INP000001234</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">SEBI Document Status</div>
+                        <div class="detail-value">
+                            <span class="status-badge approved">Verified</span>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Settlement Account</div>
+                        <div class="detail-value">1234567890</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">IFSC Code</div>
+                        <div class="detail-value">HDFC0001234</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="content-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>IIR ID</th>
+                            <th>Merchant ID</th>
+                            <th>Gateway</th>
+                            <th>Method</th>
+                            <th>MIR Template</th>
+                            <th>Terminal Type</th>
+                            <th>Created At</th>
+                            <th>Updated At</th>
+                            <th>IIR Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <a href="iir-details.html">RhA4vSMTxO7rGA</a>
+                            </td>
+                            <td>Rglg1taogLY2pd</td>
+                            <td>amex</td>
+                            <td>card</td>
+                            <td>OC217 - SEBI Template</td>
+                            <td>
+                                <span class="terminal-badge ds">DS Terminal</span>
+                            </td>
+                            <td>18th Nov, 2025 03:27 PM</td>
+                            <td>18th Nov, 2025 03:27 PM</td>
+                            <td>
+                                <span class="status-badge requested">requested</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <a href="#">RhB2xKLMnP8qHA</a>
+                            </td>
+                            <td>Rglg1taogLY2pd</td>
+                            <td>hdfc</td>
+                            <td>card</td>
+                            <td>OC217 - SEBI Template</td>
+                            <td>
+                                <span class="terminal-badge non-ds">Non-DS Terminal</span>
+                            </td>
+                            <td>18th Nov, 2025 03:28 PM</td>
+                            <td>18th Nov, 2025 03:30 PM</td>
+                            <td>
+                                <span class="status-badge approved">approved</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <a href="#">RhC5zNPQrS9tJB</a>
+                            </td>
+                            <td>Rglg1taogLY2pd</td>
+                            <td>icici</td>
+                            <td>card</td>
+                            <td>OC217 - SEBI Template</td>
+                            <td>
+                                <span class="terminal-badge ds">DS Terminal</span>
+                            </td>
+                            <td>18th Nov, 2025 03:29 PM</td>
+                            <td>18th Nov, 2025 03:29 PM</td>
+                            <td>
+                                <span class="status-badge requested">requested</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle section collapse/expand
+        document.querySelectorAll('.section-header').forEach(header => {
+            header.addEventListener('click', () => {
+                header.classList.toggle('collapsed');
+                const content = header.nextElementSibling;
+                content.classList.toggle('hidden');
+            });
+        });
+    </script>
+</body>
+</html>
