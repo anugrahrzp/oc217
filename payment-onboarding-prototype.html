@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEBI Payment Onboarding - Prototype</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 240px;
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .logo {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0c2f54;
+        }
+
+        .nav-section {
+            padding: 12px 0;
+        }
+
+        .nav-section-title {
+            padding: 8px 20px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #a0aec0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .nav-item {
+            padding: 10px 20px;
+            color: #4a5568;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover {
+            background: #f7fafc;
+            color: #0c2f54;
+        }
+
+        .nav-item.active {
+            background: #eef2ff;
+            color: #5568d3;
+            border-right: 3px solid #5568d3;
+        }
+
+        .sidebar-footer {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            padding: 20px;
+            border-top: 1px solid #e2e8f0;
+            background: white;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            height: 60px;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            position: fixed;
+            left: 240px;
+            right: 0;
+            top: 0;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            z-index: 99;
+            gap: 24px;
+        }
+
+        .top-nav-item {
+            color: #4a5568;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .top-nav-item:hover {
+            background: #f7fafc;
+        }
+
+        .search-bar {
+            flex: 1;
+            max-width: 400px;
+            margin-left: auto;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 8px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        /* Main Content */
+        .container {
+            margin-left: 240px;
+            margin-top: 60px;
+            flex: 1;
+            min-height: calc(100vh - 60px);
+        }
+
+        .main-content {
+            padding: 24px;
+            max-width: 1400px;
+        }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .breadcrumb a {
+            color: #718096;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            color: #5568d3;
+        }
+
+        .breadcrumb-current {
+            color: #5568d3;
+            font-weight: 500;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 32px;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 24px;
+        }
+
+        .tab {
+            padding: 12px 4px;
+            color: #718096;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            color: #4a5568;
+        }
+
+        .tab.active {
+            color: #5568d3;
+            border-bottom-color: #5568d3;
+        }
+
+        /* Warning Banner */
+        .warning-banner {
+            background: #fff8f0;
+            border: 1px solid #fbbf24;
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            color: #78350f;
+            font-size: 14px;
+        }
+
+        .warning-icon {
+            color: #fbbf24;
+            font-size: 18px;
+        }
+
+        /* Payment Method Cards */
+        .payment-methods {
+            display: grid;
+            gap: 20px;
+        }
+
+        .method-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .method-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .method-title-section {
+            flex: 1;
+        }
+
+        .method-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 4px;
+        }
+
+        .method-subtitle {
+            font-size: 14px;
+            color: #718096;
+        }
+
+        .method-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-badge.activated {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .doc-link {
+            color: #5568d3;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .doc-link:hover {
+            text-decoration: underline;
+        }
+
+        .request-btn {
+            background: #5568d3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .request-btn:hover {
+            background: #4752b8;
+            box-shadow: 0 2px 8px rgba(85, 104, 211, 0.3);
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 32px 32px 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .modal-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            color: #2d3748;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .modal-description {
+            color: #718096;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+
+        .modal-body {
+            padding: 32px;
+        }
+
+        .steps-list {
+            list-style: none;
+            margin-bottom: 24px;
+        }
+
+        .steps-list li {
+            padding: 16px;
+            background: #f7fafc;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            color: #4a5568;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .steps-list li strong {
+            color: #2d3748;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .portal-link {
+            display: inline-flex;
+            align-items: center;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 10px 16px;
+            background: #eef2ff;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            margin-top: 8px;
+        }
+
+        .portal-link:hover {
+            background: #e0e7ff;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background: #f0fdf4;
+            border: 2px solid #86efac;
+            border-radius: 8px;
+            margin-top: 24px;
+            cursor: pointer;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            cursor: pointer;
+        }
+
+        .checkbox-container label {
+            color: #166534;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #2d3748;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-group label .required {
+            color: #e53e3e;
+        }
+
+        .form-group input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.2s ease;
+        }
+
+        .form-group input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group .helper-text {
+            color: #718096;
+            font-size: 13px;
+            margin-top: 6px;
+        }
+
+        .form-group .error-text {
+            color: #e53e3e;
+            font-size: 13px;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .form-group.error input {
+            border-color: #e53e3e;
+        }
+
+        .form-group.error .error-text {
+            display: block;
+        }
+
+        .radio-group {
+            margin-top: 8px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .radio-option:hover {
+            background: #f7fafc;
+        }
+
+        .radio-option input[type="radio"] {
+            margin-right: 12px;
+            cursor: pointer;
+        }
+
+        .radio-option label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        .radio-option input[type="radio"]:checked + label {
+            color: #667eea;
+        }
+
+        .advanced-options-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 8px;
+        }
+
+        .advanced-options-header:hover {
+            background: #edf2f7;
+        }
+
+        .advanced-options-label {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 14px;
+        }
+
+        .chevron {
+            color: #718096;
+            font-size: 12px;
+            transition: transform 0.3s;
+        }
+
+        .chevron.rotated {
+            transform: rotate(-180deg);
+        }
+
+        .advanced-options-content {
+            margin-top: 12px;
+            padding: 16px;
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .checkbox-option input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .checkbox-option label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: 500;
+            color: #2d3748;
+            font-size: 14px;
+        }
+
+        .advanced-settlement-info {
+            margin-bottom: 16px;
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+        }
+
+        .advanced-settlement-info p {
+            margin-bottom: 8px;
+            color: #2d3748;
+            font-size: 13px;
+        }
+
+        .advanced-settlement-info ul {
+            margin-left: 20px;
+            color: #4a5568;
+            font-size: 13px;
+        }
+
+        .advanced-settlement-info li {
+            margin-bottom: 4px;
+        }
+
+        .info-note {
+            background: #fffbeb;
+            border: 1px solid #fbbf24;
+            border-radius: 6px;
+            padding: 12px;
+        }
+
+        .info-note p {
+            color: #78350f;
+            font-size: 13px;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .modal-footer {
+            padding: 24px 32px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .btn-secondary {
+            background: #f7fafc;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 32px;
+        }
+
+        .progress-step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            padding-bottom: 8px;
+        }
+
+        .progress-step::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 2px;
+        }
+
+        .progress-step.active::before {
+            background: #667eea;
+        }
+
+        .progress-step.completed::before {
+            background: #48bb78;
+        }
+
+        .progress-label {
+            font-size: 12px;
+            color: #a0aec0;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+
+        .progress-step.active .progress-label {
+            color: #667eea;
+        }
+
+        .progress-step.completed .progress-label {
+            color: #48bb78;
+        }
+
+        .icici-info {
+            background: #fffbeb;
+            border: 2px solid #fbbf24;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .icici-info p {
+            color: #78350f;
+            font-size: 13px;
+            margin: 0;
+        }
+
+        .success-message {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .success-icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+        }
+
+        .success-title {
+            font-size: 24px;
+            color: #2d3748;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .success-description {
+            color: #718096;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .terminal-type-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #e0e7ff;
+            color: #4c51bf;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">⚡ Razorpay</div>
+        </div>
+        <div class="nav-section">
+            <div class="nav-item">🏠 Home</div>
+            <div class="nav-item">💳 Transactions</div>
+            <div class="nav-item">📊 Settlements</div>
+            <div class="nav-item">📈 Reports</div>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">Payment Products</div>
+            <div class="nav-item">✨ Magic Checkout</div>
+            <div class="nav-item">🔗 Payment Links</div>
+            <div class="nav-item">📄 Payment Pages</div>
+            <div class="nav-item">➕ +13 More</div>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">Banking Products</div>
+            <div class="nav-item">💼 X Corporate Cards</div>
+            <div class="nav-item">💰 X Payroll</div>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">Customer Products</div>
+            <div class="nav-item">👥 Customers</div>
+            <div class="nav-item">🎁 Offers</div>
+            <div class="nav-item">⚙️ Developers</div>
+            <div class="nav-item">🎯 Apps & Deals</div>
+        </div>
+        <div class="sidebar-footer">
+            <div class="nav-item">⚡ Test Mode</div>
+            <div class="nav-item active">⚙️ Account & Settings</div>
+        </div>
+    </div>
+
+    <!-- Top Navigation -->
+    <div class="top-nav">
+        <div class="top-nav-item">🏠 Razorpay Home</div>
+        <div class="top-nav-item">💳 Payments</div>
+        <div class="top-nav-item">🏦 Banking+</div>
+        <div class="top-nav-item">💼 Payroll ↗</div>
+        <div class="top-nav-item">More ▼</div>
+        <div class="search-bar">
+            <input type="text" placeholder="🔍 Search payment products, settings, and more">
+        </div>
+        <div class="top-nav-item">⚡</div>
+        <div class="top-nav-item">👤</div>
+        <div class="top-nav-item">HC</div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="main-content">
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+                <a href="#">← Account & Settings</a>
+                <span>›</span>
+                <span class="breadcrumb-current">UPI/QR</span>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <div class="tab">Cards</div>
+                <div class="tab active">UPI/QR</div>
+                <div class="tab">Netbanking</div>
+                <div class="tab">EMI</div>
+                <div class="tab">Wallet</div>
+                <div class="tab">Pay Later</div>
+                <div class="tab">International Payments</div>
+            </div>
+
+            <!-- Payment Methods -->
+            <div class="payment-methods">
+                <!-- UPI Card -->
+                <div class="method-card">
+                    <div class="method-header">
+                        <div class="method-title-section">
+                            <h2 class="method-title">UPI</h2>
+                            <p class="method-subtitle">Gpay, PhonePe, BHIM & more</p>
+                        </div>
+                        <div class="method-actions">
+                            <button class="request-btn" onclick="openModal('one-time')">Request</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- UPI Autopay Card -->
+                <div class="method-card">
+                    <div class="method-header">
+                        <div class="method-title-section">
+                            <h2 class="method-title">UPI Autopay</h2>
+                            <p class="method-subtitle">Allow customers to create mandates via UPI.</p>
+                        </div>
+                        <div class="method-actions">
+                            <button class="request-btn" onclick="openModal('autopay')">Request</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Overlay -->
+        <div class="modal-overlay" id="modalOverlay">
+            <div class="modal">
+                <!-- Screen 1: SEBI Compliance Notice -->
+                <div id="screen1" class="screen">
+                    <div class="modal-header">
+                        <div class="modal-icon">⚠️</div>
+                        <h2 class="modal-title">SEBI Regulatory Requirement</h2>
+                        <p class="modal-description">
+                            As a SEBI-regulated intermediary, you must obtain a validated UPI ID from
+                            SEBI portal before enabling UPI payments.
+                        </p>
+                    </div>
+                    <div class="modal-body">
+                        <div style="background: #eef2ff; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea;">
+                            <p style="color: #3730a3; margin-bottom: 12px; font-weight: 600;">Why is this required?</p>
+                            <p style="color: #4c51bf; font-size: 14px; line-height: 1.6; margin: 0;">
+                                SEBI circular (SEBI/HO/DEPA-II/DEPA-II_SRG/P/CIR/2025/86) mandates that
+                                all regulated intermediaries must use validated UPI IDs with @valid handles
+                                for payment collection to ensure compliance and security.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                        <button class="btn btn-primary" onclick="goToScreen(2)">Proceed to Setup →</button>
+                    </div>
+                </div>
+
+                <!-- Screen 2: SEBI Portal Instructions -->
+                <div id="screen2" class="screen" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-step completed">
+                            <div class="progress-label">Notice</div>
+                        </div>
+                        <div class="progress-step active">
+                            <div class="progress-label">Instructions</div>
+                        </div>
+                        <div class="progress-step">
+                            <div class="progress-label">Details</div>
+                        </div>
+                    </div>
+
+                    <div class="modal-header">
+                        <div class="modal-icon">📝</div>
+                        <h2 class="modal-title" id="instructionsModalTitle">Steps to Generate Validated UPI ID</h2>
+                        <p class="modal-description" id="instructionsModalDescription">
+                            Follow these steps on the SEBI SI Portal to generate your validated UPI ID
+                        </p>
+                    </div>
+                    <div class="modal-body">
+                        <ul class="steps-list">
+                            <li>
+                                <strong>1. Visit SEBI SI Portal</strong>
+                                <a href="https://si.sebi.gov.in" target="_blank" class="portal-link">
+                                    Open Portal ↗
+                                </a>
+                            </li>
+                            <li>
+                                <strong>2. Login with your SEBI credentials</strong>
+                                Use your registered SEBI intermediary login credentials
+                            </li>
+                            <li>
+                                <strong>3. Navigate to "UPI ID Generation"</strong>
+                                Find the UPI ID Generation section in your dashboard
+                            </li>
+                            <li>
+                                <strong>4. Generate your @valid UPI ID</strong>
+                                Follow the portal's instructions to create your validated UPI ID
+                            </li>
+                        </ul>
+
+                        <div class="checkbox-container" onclick="toggleCheckbox()">
+                            <input type="checkbox" id="completionCheckbox" onchange="updateProceedButton()">
+                            <label for="completionCheckbox">I have completed these steps</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="goToScreen(1)">← Back</button>
+                        <button class="btn btn-primary" id="proceedToDetailsBtn" disabled onclick="goToScreen(3)">
+                            Enter UPI Details →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Screen 3: UPI Details Collection -->
+                <div id="screen3" class="screen" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-step completed">
+                            <div class="progress-label">Notice</div>
+                        </div>
+                        <div class="progress-step completed">
+                            <div class="progress-label">Instructions</div>
+                        </div>
+                        <div class="progress-step active">
+                            <div class="progress-label">Details</div>
+                        </div>
+                    </div>
+
+                    <div class="modal-header">
+                        <div class="terminal-type-badge" id="terminalTypeBadge">UPI AUTOPAY</div>
+                        <h2 class="modal-title" id="detailsModalTitle">Enter Your Validated UPI Details</h2>
+                        <p class="modal-description" id="detailsModalDescription">
+                            Provide your SEBI-validated UPI information and settlement details
+                        </p>
+                    </div>
+                    <div class="modal-body">
+                        <form id="upiDetailsForm">
+                            <div class="form-group">
+                                <label>
+                                    VPA (UPI ID) <span class="required">*</span>
+                                </label>
+                                <input type="text" id="vpaInput" placeholder="yourbusiness.mf@validhdfc" oninput="validateVPA()">
+                                <p class="helper-text">Example: yourbusiness.mf@validhdfc</p>
+                                <p class="error-text" id="vpaError">VPA must use validated @valid handle</p>
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    Settlement Account Number <span class="required">*</span>
+                                </label>
+                                <input type="text" id="accountInput" placeholder="50100123456789" oninput="validateAccount()">
+                                <p class="error-text" id="accountError">Please enter a valid account number</p>
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    IFSC Code <span class="required">*</span>
+                                </label>
+                                <input type="text" id="ifscInput" placeholder="HDFC0001234" oninput="validateIFSC()" maxlength="11">
+                                <p class="helper-text">11-character IFSC code from approved syndicate banks</p>
+                                <p class="error-text" id="ifscError">Please enter a valid 11-character IFSC code</p>
+                            </div>
+
+                            <div class="form-group" id="iciciMidGroup" style="display: none;">
+                                <label>
+                                    ICICI MID <span class="required">*</span>
+                                </label>
+                                <input type="text" id="iciciMidInput" placeholder="ICICI12345" oninput="validateForm()">
+                                <div class="icici-info" id="iciciInfo">
+                                    <p>📌 ICICI MID is required for @validicici VPA handles</p>
+                                </div>
+                                <p class="error-text" id="iciciMidError">ICICI MID is required for ICICI VPAs</p>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="checkbox-container" style="background: #f7fafc; border-color: #e2e8f0; margin-top: 16px;" onclick="toggleSoftNudge()">
+                                    <input type="checkbox" id="softNudgeCheckbox" onchange="validateForm()">
+                                    <label for="softNudgeCheckbox" style="color: #4a5568; font-weight: 500;">I confirm that the details provided are correct. I understand that any incorrect information will cause a delay in processing with our banking partners.</label>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="goToScreen(2)">← Back</button>
+                        <button class="btn btn-primary" id="submitBtn" disabled onclick="submitForm()">
+                            Submit for Review
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Success Screen -->
+                <div id="successScreen" class="screen" style="display: none;">
+                    <div class="modal-body">
+                        <div class="success-message">
+                            <div class="success-icon">✅</div>
+                            <h2 class="success-title">Request Submitted Successfully!</h2>
+                            <p class="success-description">
+                                Your UPI terminal setup request has been submitted for review.
+                                Our compliance team will verify your details and activate your terminal within 48 hours.
+                            </p>
+                            <p class="success-description" style="font-size: 14px; color: #4a5568;">
+                                You will receive an email notification once your terminal is activated.
+                            </p>
+                            <button class="btn btn-primary" onclick="closeModal()">Done</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedTerminalType = 'autopay'; // Default to autopay
+
+        function openModal(terminalType = 'autopay') {
+            selectedTerminalType = terminalType;
+            document.getElementById('modalOverlay').classList.add('active');
+
+            // Update modal content based on terminal type
+            const instructionsTitle = document.getElementById('instructionsModalTitle');
+            const instructionsDescription = document.getElementById('instructionsModalDescription');
+            const detailsTitle = document.getElementById('detailsModalTitle');
+            const detailsDescription = document.getElementById('detailsModalDescription');
+            const terminalTypeBadge = document.getElementById('terminalTypeBadge');
+
+            if (terminalType === 'autopay') {
+                instructionsTitle.textContent = 'Steps to Generate Validated UPI ID for Autopay';
+                instructionsDescription.textContent = 'Follow these steps on the SEBI SI Portal to generate your validated UPI ID for recurring payments';
+                detailsTitle.textContent = 'Enter Your Validated UPI Autopay Details';
+                detailsDescription.textContent = 'Provide your SEBI-validated UPI information for recurring payment mandates';
+                terminalTypeBadge.textContent = 'UPI AUTOPAY';
+            } else {
+                instructionsTitle.textContent = 'Steps to Generate Validated UPI ID';
+                instructionsDescription.textContent = 'Follow these steps on the SEBI SI Portal to generate your validated UPI ID for one-time payments';
+                detailsTitle.textContent = 'Enter Your Validated UPI Details';
+                detailsDescription.textContent = 'Provide your SEBI-validated UPI information for one-time payments';
+                terminalTypeBadge.textContent = 'UPI ONE-TIME';
+            }
+
+            goToScreen(1);
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            resetForm();
+        }
+
+        function goToScreen(screenNum) {
+            // Hide all screens
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.style.display = 'none';
+            });
+
+            // Show selected screen
+            document.getElementById(`screen${screenNum}`).style.display = 'block';
+
+            // Scroll to top of modal
+            document.querySelector('.modal').scrollTop = 0;
+        }
+
+        function toggleCheckbox() {
+            const checkbox = document.getElementById('completionCheckbox');
+            checkbox.checked = !checkbox.checked;
+            updateProceedButton();
+        }
+
+        function updateProceedButton() {
+            const checkbox = document.getElementById('completionCheckbox');
+            const proceedBtn = document.getElementById('proceedToDetailsBtn');
+            proceedBtn.disabled = !checkbox.checked;
+        }
+
+        function toggleSoftNudge() {
+            const checkbox = document.getElementById('softNudgeCheckbox');
+            checkbox.checked = !checkbox.checked;
+            validateForm();
+        }
+
+        function validateVPA() {
+            const vpaInput = document.getElementById('vpaInput');
+            const vpaGroup = vpaInput.closest('.form-group');
+            const vpa = vpaInput.value.trim();
+            const iciciMidGroup = document.getElementById('iciciMidGroup');
+            const iciciInfo = document.getElementById('iciciInfo');
+
+            // Check if VPA contains @valid
+            if (vpa && !vpa.includes('@valid')) {
+                vpaGroup.classList.add('error');
+            } else {
+                vpaGroup.classList.remove('error');
+            }
+
+            // Show ICICI MID field if VPA contains @validicici
+            if (vpa.includes('@validicici')) {
+                iciciMidGroup.style.display = 'block';
+                iciciInfo.style.display = 'block';
+            } else {
+                iciciMidGroup.style.display = 'none';
+                iciciInfo.style.display = 'none';
+            }
+
+            validateForm();
+        }
+
+        function validateAccount() {
+            const accountInput = document.getElementById('accountInput');
+            const accountGroup = accountInput.closest('.form-group');
+            const account = accountInput.value.trim();
+
+            if (account && (account.length < 9 || account.length > 18 || !/^\d+$/.test(account))) {
+                accountGroup.classList.add('error');
+            } else {
+                accountGroup.classList.remove('error');
+            }
+
+            validateForm();
+        }
+
+        function validateIFSC() {
+            const ifscInput = document.getElementById('ifscInput');
+            const ifscGroup = ifscInput.closest('.form-group');
+            const ifsc = ifscInput.value.trim().toUpperCase();
+
+            ifscInput.value = ifsc;
+
+            if (ifsc && (ifsc.length !== 11 || !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc))) {
+                ifscGroup.classList.add('error');
+            } else {
+                ifscGroup.classList.remove('error');
+            }
+
+            validateForm();
+        }
+
+        function validateForm() {
+            const vpa = document.getElementById('vpaInput').value.trim();
+            const account = document.getElementById('accountInput').value.trim();
+            const ifsc = document.getElementById('ifscInput').value.trim();
+            const iciciMidInput = document.getElementById('iciciMidInput');
+            const iciciMid = iciciMidInput.value.trim();
+            const submitBtn = document.getElementById('submitBtn');
+
+            // Basic required field validation
+            const requiredFieldsFilled = vpa && account && ifsc;
+
+            // VPA must contain @valid
+            const vpaValid = vpa.includes('@valid');
+
+            // Account validation
+            const accountValid = account.length >= 9 && account.length <= 18 && /^\d+$/.test(account);
+
+            // IFSC validation
+            const ifscValid = ifsc.length === 11 && /^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc);
+
+            // ICICI MID validation (if required)
+            let iciciMidValid = true;
+            if (vpa.includes('@validicici')) {
+                iciciMidValid = iciciMid.length > 0;
+                const iciciMidGroup = document.getElementById('iciciMidGroup');
+                if (!iciciMidValid && iciciMid === '') {
+                    iciciMidGroup.classList.remove('error');
+                } else if (!iciciMidValid) {
+                    iciciMidGroup.classList.add('error');
+                } else {
+                    iciciMidGroup.classList.remove('error');
+                }
+            }
+
+            const softNudgeChecked = document.getElementById('softNudgeCheckbox').checked;
+
+            // Enable submit button if all validations pass
+            submitBtn.disabled = !(requiredFieldsFilled && vpaValid && accountValid && ifscValid && iciciMidValid && softNudgeChecked);
+        }
+
+        function submitForm() {
+            // Collect form data
+            const formData = {
+                vpa: document.getElementById('vpaInput').value.trim(),
+                account: document.getElementById('accountInput').value.trim(),
+                ifsc: document.getElementById('ifscInput').value.trim(),
+                iciciMid: document.getElementById('iciciMidInput').value.trim() || null,
+                terminalType: selectedTerminalType, // Use the pre-selected terminal type
+            };
+
+            console.log('Form submitted with data:', formData);
+
+            // Show success screen
+            document.getElementById('screen3').style.display = 'none';
+            document.getElementById('successScreen').style.display = 'block';
+        }
+
+        function resetForm() {
+            document.getElementById('upiDetailsForm').reset();
+            document.getElementById('completionCheckbox').checked = false;
+            document.getElementById('softNudgeCheckbox').checked = false;
+            document.querySelectorAll('.form-group').forEach(group => {
+                group.classList.remove('error');
+            });
+            document.getElementById('iciciMidGroup').style.display = 'none';
+            document.getElementById('iciciInfo').style.display = 'none';
+            updateProceedButton();
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('modalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
