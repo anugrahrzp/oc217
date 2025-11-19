@@ -348,6 +348,55 @@
         .source-badge-icon {
             font-size: 16px;
         }
+
+        .merchant-type-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .merchant-type-badge.managed {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        .merchant-type-badge.unmanaged {
+            background-color: #f3f4f6;
+            color: #4b5563;
+        }
+
+        .poc-details {
+            background-color: #f0f9ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 8px;
+        }
+
+        .poc-label {
+            font-size: 11px;
+            color: #3b82f6;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .poc-name {
+            font-size: 14px;
+            color: #1e40af;
+            font-weight: 600;
+        }
+
+        .poc-email {
+            font-size: 13px;
+            color: #3b82f6;
+            margin-top: 2px;
+        }
     </style>
 </head>
 <body>
@@ -401,14 +450,25 @@
                             <span class="detail-value">13th Aug, 2025 02:45 PM</span>
                         </div>
                         <div class="detail-item">
-                            <span class="detail-label">Request Source</span>
+                            <span class="detail-label">Merchant Type</span>
                             <span class="detail-value">
-                                <span class="source-badge">
-                                    <span class="source-badge-icon">👤</span>
-                                    POC - Rajesh Kumar (rajesh.kumar@razorpay.com)
+                                <span class="merchant-type-badge managed" id="merchantTypeBadge">
+                                    🏢 Managed
                                 </span>
                             </span>
                         </div>
+                    </div>
+
+                    <!-- POC Details - Only shown for Managed Merchants -->
+                    <div class="poc-details" id="pocDetailsSection">
+                        <div class="poc-label">Key Account Manager (POC)</div>
+                        <div class="poc-name" id="pocName">Rajesh Kumar</div>
+                        <div class="poc-email" id="pocEmail">rajesh.kumar@razorpay.com</div>
+                    </div>
+
+                    <!-- Hidden section restored -->
+                    <div class="details-grid" style="margin-top: 16px; display: none;">
+                        <div style="grid-column: 1 / -1;"></div>
                     </div>
 
                     <!-- IIR Table -->
@@ -465,39 +525,70 @@
         </div>
     </div>
 
-    <!-- POC Communication Modal -->
-    <div class="modal-overlay" id="pocModal">
+    <!-- Managed Merchant Communication Modal -->
+    <div class="modal-overlay" id="managedMerchantModal">
         <div class="modal">
             <div class="modal-header">
                 <div class="modal-icon">ℹ️</div>
-                <h2 class="modal-title">POC Communication Alert</h2>
+                <h2 class="modal-title">Managed Merchant - POC Communication</h2>
             </div>
             <div class="modal-body">
                 <p class="modal-message">
-                    This MIR request was raised by a <strong>POC (Key Account Manager)</strong> on behalf of the merchant.
-                    The ARI communication will be sent to the POC instead of the merchant directly.
+                    This is a <strong>Managed Merchant</strong>. The ARI communication will be sent via <strong>Email</strong> to the assigned Key Account Manager (POC) instead of directly to the merchant.
                 </p>
                 <div class="modal-highlight">
-                    <div class="modal-highlight-label">POC DETAILS</div>
-                    <div class="modal-highlight-value">Rajesh Kumar</div>
-                    <div style="font-size: 13px; color: #666; margin-top: 4px;">rajesh.kumar@razorpay.com</div>
+                    <div class="modal-highlight-label">KEY ACCOUNT MANAGER (POC)</div>
+                    <div class="modal-highlight-value" id="modalPocName">Rajesh Kumar</div>
+                    <div style="font-size: 13px; color: #666; margin-top: 4px;" id="modalPocEmail">rajesh.kumar@razorpay.com</div>
                 </div>
                 <div class="modal-highlight" style="margin-top: 12px;">
-                    <div class="modal-highlight-label">MERCHANT</div>
+                    <div class="modal-highlight-label">MERCHANT ID</div>
                     <div class="modal-highlight-value">GtjTEOlQJJBBX</div>
                 </div>
                 <p class="modal-message" style="margin-top: 16px; font-size: 13px; color: #666;">
-                    The POC will coordinate with the merchant to gather required information and respond to the ARI.
+                    The POC will coordinate with the merchant to gather required information and respond to the ARI request.
                 </p>
             </div>
             <div class="modal-footer">
                 <button class="btn-secondary" onclick="closeModal()">Cancel</button>
-                <button class="btn-primary" onclick="sendToPOC()">Send to POC</button>
+                <button class="btn-primary" onclick="sendToPOC()">Send Email to POC</button>
             </div>
         </div>
     </div>
 
     <script>
+        // Merchant data (simulated - in real app, this would come from API)
+        const merchantData = {
+            type: 'MANAGED', // Can be 'MANAGED' or 'UNMANAGED'
+            mid: 'GtjTEOlQJJBBX',
+            poc: {
+                name: 'Rajesh Kumar',
+                email: 'rajesh.kumar@razorpay.com'
+            }
+        };
+
+        // Initialize page based on merchant type
+        function initializePage() {
+            const merchantTypeBadge = document.getElementById('merchantTypeBadge');
+            const pocDetailsSection = document.getElementById('pocDetailsSection');
+
+            if (merchantData.type === 'MANAGED') {
+                // Show MANAGED badge and POC details
+                merchantTypeBadge.className = 'merchant-type-badge managed';
+                merchantTypeBadge.innerHTML = '🏢 Managed';
+                pocDetailsSection.style.display = 'block';
+
+                // Update POC details
+                document.getElementById('pocName').textContent = merchantData.poc.name;
+                document.getElementById('pocEmail').textContent = merchantData.poc.email;
+            } else {
+                // Show UNMANAGED badge and hide POC details
+                merchantTypeBadge.className = 'merchant-type-badge unmanaged';
+                merchantTypeBadge.innerHTML = '🏪 Unmanaged';
+                pocDetailsSection.style.display = 'none';
+            }
+        }
+
         // Toggle card expand/collapse
         function toggleCard(header) {
             const card = header.parentElement;
@@ -514,56 +605,73 @@
 
         // Send Communication Button Click Handler
         document.getElementById('sendCommunicationBtn').addEventListener('click', function() {
-            // Check MIR source (simulated - in real app, this would come from API)
-            const mirSource = 'POC'; // Can be 'MERCHANT' or 'POC'
-
-            if (mirSource === 'POC') {
-                // Show POC confirmation modal
-                document.getElementById('pocModal').classList.add('active');
+            // Check merchant type to determine routing
+            if (merchantData.type === 'MANAGED') {
+                // Show POC confirmation modal for managed merchants
+                // Update modal with POC details
+                document.getElementById('modalPocName').textContent = merchantData.poc.name;
+                document.getElementById('modalPocEmail').textContent = merchantData.poc.email;
+                document.getElementById('managedMerchantModal').classList.add('active');
             } else {
-                // Directly send to merchant (existing flow)
+                // Directly send to merchant via WhatsApp for unmanaged merchants
                 sendToMerchant();
             }
         });
 
         // Close modal
         function closeModal() {
-            document.getElementById('pocModal').classList.remove('active');
+            document.getElementById('managedMerchantModal').classList.remove('active');
         }
 
-        // Send to POC
+        // Send to POC (Email for managed merchants)
         function sendToPOC() {
-            console.log('Sending ARI communication to POC...');
+            console.log('Sending ARI communication via EMAIL to POC...');
 
-            // API call to send email/WhatsApp to POC
+            // API call to send email to POC
             // Example:
             // fetch('/api/communication/ari/send', {
             //     method: 'POST',
             //     body: JSON.stringify({
             //         case_id: 'R4lQTiJaYdJ526',
+            //         merchant_type: 'MANAGED',
             //         recipient_type: 'POC',
-            //         communication_channels: ['EMAIL', 'WHATSAPP']
+            //         poc_email: merchantData.poc.email,
+            //         communication_channel: 'EMAIL'
             //     })
             // })
 
-            alert('ARI communication sent to POC: Rajesh Kumar (rajesh.kumar@razorpay.com)');
+            alert(`ARI communication sent via EMAIL to POC: ${merchantData.poc.name} (${merchantData.poc.email})`);
             closeModal();
         }
 
-        // Send to Merchant (existing flow)
+        // Send to Merchant (WhatsApp for unmanaged merchants)
         function sendToMerchant() {
-            console.log('Sending ARI communication to Merchant...');
+            console.log('Sending ARI communication via WhatsApp to Merchant...');
 
-            // API call to send email/WhatsApp to merchant
-            alert('ARI communication sent to Merchant');
+            // API call to send WhatsApp to merchant
+            // Example:
+            // fetch('/api/communication/ari/send', {
+            //     method: 'POST',
+            //     body: JSON.stringify({
+            //         case_id: 'R4lQTiJaYdJ526',
+            //         merchant_type: 'UNMANAGED',
+            //         recipient_type: 'MERCHANT',
+            //         communication_channel: 'WHATSAPP'
+            //     })
+            // })
+
+            alert('ARI communication sent via WhatsApp to Merchant');
         }
 
         // Close modal when clicking outside
-        document.getElementById('pocModal').addEventListener('click', function(e) {
+        document.getElementById('managedMerchantModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeModal();
             }
         });
+
+        // Initialize the page on load
+        initializePage();
     </script>
 </body>
 </html>
