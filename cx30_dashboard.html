@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cx.30 Management Dashboards</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background-color: #f8f9fa; }
+        .nav-tabs .nav-link { color: #495057; }
+        .nav-tabs .nav-link.active { color: #0d6efd; font-weight: bold; border-color: #dee2e6 #dee2e6 #fff; }
+        .card-kpi { transition: all 0.2s ease-in-out; border: 2px solid transparent; }
+        .card-kpi:hover { transform: translateY(-5px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); cursor: pointer; }
+        .card-kpi.selected { border-color: #0d6efd; box-shadow: 0 4px 12px rgba(13,110,253,0.25); }
+        .card-kpi .card-title { font-size: 0.85rem; color: #6c757d; }
+        .card-kpi .card-text { font-size: 1.5rem; font-weight: bold; }
+        .card-kpi .card-subtitle { font-size: 0.75rem; color: #6c757d; }
+        .table-sm > :not(caption) > * > * { padding: .3rem .3rem; font-size: .8rem; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid p-4">
+        <h1 class="mb-4">Cx.30 Management Dashboards</h1>
+        <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation"><button class="nav-link active" id="okr-tracker-tab" data-bs-toggle="tab" data-bs-target="#okr-tracker" type="button" role="tab">OKR Tracker</button></li>
+            <li class="nav-item" role="presentation"><button class="nav-link" id="input-matrix-tab" data-bs-toggle="tab" data-bs-target="#input-matrix" type="button" role="tab">Input Metrics</button></li>
+        </ul>
+
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="okr-tracker" role="tabpanel">
+                <div class="d-flex justify-content-between align-items-center pb-3 mb-3"><h2 class="h3 mb-0">Operational Health Tracker</h2><div class="dropdown"><button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">Last 30 Days</button><ul class="dropdown-menu"><li><a class="dropdown-item" href="#">Last 7 Days</a></li><li><a class="dropdown-item" href="#">Last 90 Days</a></li></ul></div></div>
+                <div class="row">
+                    <div class="col-xl col-lg-3 col-md-4 col-sm-6 mb-4" data-metric="sv" data-target-chart="okr"><div class="card h-100 card-kpi selected"><div class="card-body"><h6 class="card-title">Total Support Tickets (SV)</h6><p class="card-text">5,000</p><p class="card-subtitle text-muted">&nbsp;</p></div></div></div>
+                    <div class="col-xl col-lg-3 col-md-4 col-sm-6 mb-4" data-metric="dsat" data-target-chart="okr"><div class="card h-100 card-kpi"><div class="card-body"><h6 class="card-title">DSAT Causing Tickets</h6><p class="card-text">250</p><p class="card-subtitle text-muted">5.0% of Total SV <br> Impacted Merchants: 200</p></div></div></div>
+                    <div class="col-xl col-lg-3 col-md-4 col-sm-6 mb-4" data-metric="escalations" data-target-chart="okr"><div class="card h-100 card-kpi"><div class="card-body"><h6 class="card-title">Escalations</h6><p class="card-text">310</p><p class="card-subtitle text-muted">6.2% of Total SV <br> Impacted Merchants: 250</p></div></div></div>
+                    <div class="col-xl col-lg-3 col-md-4 col-sm-6 mb-4" data-metric="sla" data-target-chart="okr"><div class="card h-100 card-kpi"><div class="card-body"><h6 class="card-title">SLA Exceeded Tickets</h6><p class="card-text">112</p><p class="card-subtitle text-muted">2.24% of Total SV <br> Impacted Merchants: 90</p></div></div></div>
+                    <div class="col-xl col-lg-3 col-md-4 col-sm-6 mb-4" data-metric="ccd" data-target-chart="okr"><div class="card h-100 card-kpi"><div class="card-body"><h6 class="card-title">CCD Tickets</h6><p class="card-text">45</p><p class="card-subtitle text-muted">0.9% of Total SV <br> Impacted Merchants: 30</p></div></div></div>
+                    <div class="col-xl col-lg-3 col-md-4 col-sm-6 mb-4" data-metric="ipt" data-target-chart="okr"><div class="card h-100 card-kpi"><div class="card-body"><h6 class="card-title">IPT > 4 Tickets</h6><p class="card-text">75</p><p class="card-subtitle text-muted">1.5% of Total SV <br> Impacted Merchants: 60</p></div></div></div>
+                    <div class="col-xl col-lg-3 col-md-4 col-sm-6 mb-4" data-metric="incidents" data-target-chart="okr"><div class="card h-100 card-kpi"><div class="card-body"><h6 class="card-title">P0-P2 Incidents</h6><p class="card-text">152</p><p class="card-subtitle text-muted">Impacted Merchants: 100</p></div></div></div>
+                </div>
+                <div id="okr-drilldown-wrapper" class="row d-none">
+                    <div id="okr-chart-col" class="col-lg-7 mb-4"><div class="card h-100"><div class="card-header" id="okr-chart-title"></div><div class="card-body"><canvas id="okrBurnDownChart" style="min-height: 350px;"></canvas></div></div></div>
+                    <div id="okr-table-col" class="col-lg-5 mb-4"><div class="card h-100"><div class="card-header" id="okr-table-title">Breakdown by Category</div><div class="card-body"><table class="table table-sm table-hover" id="okr-breakdown-table"><thead><tr><th id="okr-table-header-col1">Category</th><th id="okr-table-header-col2">Count</th></tr></thead><tbody></tbody></table></div></div></div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="input-matrix" role="tabpanel">
+                <div class="d-flex justify-content-between align-items-center pb-3 mb-3"><h2 class="h3 mb-0">L3 Input Matrix Tracking</h2><div class="dropdown"><button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">Q4 2025</button><ul class="dropdown-menu"><li><a class="dropdown-item" href="#">Q1 2026</a></li><li><a class="dropdown-item" href="#">Q3 2025</a></li></ul></div></div>
+                <div class="row">
+                    <div class="col-lg-3 col-md-6 mb-4" data-metric="iir-main" data-target-chart="input"><div class="card h-100 card-kpi"><div class="card-body"><h6 class="card-title">IIRs (Unhappy Flow)</h6><p class="card-text">8.3% (500)</p><p class="card-subtitle text-muted">Merchants Impacted: 450<br>Click for breakdown</p></div></div></div>
+                    <div class="col-lg-3 col-md-6 mb-4" data-metric="ntf-main" data-target-chart="input"><div class="card h-100 card-kpi"><div class="card-body"><h6 class="card-title">No Terminal NTFs (terminal)</h6><p class="card-text">200</p><p class="card-subtitle text-muted">Merchants Impacted: 180<br>Click for breakdown</p></div></div></div>
+                    <div class="col-lg-3 col-md-6 mb-4" data-metric="mir-main" data-target-chart="input"><div class="card h-100 card-kpi"><div class="card-body"><h6 class="card-title">Merchants w/o MIR Status</h6><p class="card-text">150</p><p class="card-subtitle text-muted">Merchants Impacted: 150<br>Click for breakdown</p></div></div></div>
+                     <div class="col-lg-3 col-md-6 mb-4" data-metric="ari-main" data-target-chart="input"><div class="card h-100 card-kpi"><div class="card-body"><h6 class="card-title">ARI Non-Closure</h6><p class="card-text">667 (15%)</p><p class="card-subtitle text-muted">Total ARIs (Non-Closure %)<br>Click for breakdown</p></div></div></div>
+                </div>
+
+                <div id="iir-sub-cards" class="row d-none mb-3">
+                    <div class="col-lg-2 col-md-4 mb-4" data-metric="iirUnhappyFlow" data-target-chart="input-sub"><div class="card h-100 card-kpi"><div class="card-body"><h6 class="card-title">Unhappy IIRs</h6><p class="card-text">8.3% (500)</p><p class="card-subtitle text-muted">Merchants Impacted: 450</p></div></div></div>
+                    <div class="col-lg-2 col-md-4 mb-4" data-metric="rejectedInternal" data-target-chart="input-sub"><div class="card h-100 card-kpi"><div class="card-body"><h6 class="card-title">Rejected Internal</h6><p class="card-text">4.2% (250)</p><p class="card-subtitle text-muted">Merchants Impacted: 200</p></div></div></div>
+                    <div class="col-lg-2 col-md-4 mb-4" data-metric="ari" data-target-chart="input-sub"><div class="card h-100 card-kpi"><div class="card-body"><h6 class="card-title">ARI</h6><p class="card-text">2.5% (150)</p><p class="card-subtitle text-muted">Merchants Impacted: 150</p></div></div></div>
+                    <div class="col-lg-2 col-md-4 mb-4" data-metric="arb" data-target-chart="input-sub"><div class="card h-100 card-kpi"><div class="card-body"><h6 class="card-title">ARB</h6><p class="card-text">1.7% (100)</p><p class="card-subtitle text-muted">Merchants Impacted: 100</p></div></div></div>
+                </div>
+                
+                <div id="ntf-chart-table-wrapper" class="row d-none"><div class="col-lg-6 mb-4"><div class="card h-100"><div class="card-header">No Terminal NTFs Burndown</div><div class="card-body"><canvas id="ntfBurnDownChart" style="min-height: 350px;"></canvas></div></div></div><div class="col-lg-6 mb-4"><div class="card h-100"><div class="card-header">NTF Breakdown</div><div class="card-body"><table class="table table-sm table-hover"><thead><tr><th>L1: Method</th><th>L2: Instrument Name</th><th>NTF Count</th></tr></thead><tbody><tr><td>Credit</td><td>Visa Classic</td><td>50</td></tr><tr><td>Credit</td><td>Mastercard Gold</td><td>45</td></tr><tr><td>Debit</td><td>Visa Debit</td><td>30</td></tr><tr><td>ACH</td><td>US Bank Account</td><td>25</td></tr><tr><td>Wallet</td><td>Digital Wallet</td><td>15</td></tr><tr><td>Other</td><td>Misc.</td><td>35</td></tr></tbody></table></div></div></div></div>
+                <div id="mir-charts-wrapper" class="row d-none"><div class="col-lg-6 mb-4"><div class="card h-100"><div class="card-header">Merchant-wise Status Updates</div><div class="card-body d-flex justify-content-center align-items-center"><canvas id="mir-chart-merchant"></canvas></div></div></div><div class="col-lg-6 mb-4"><div class="card h-100"><div class="card-header">MIR-wise Status Updates</div><div class="card-body d-flex justify-content-center align-items-center"><canvas id="mir-chart-mir"></canvas></div></div></div></div>
+                <div id="ari-tables-wrapper" class="row d-none"><div class="col-lg-6 mb-4"><div class="card h-100"><div class="card-header">Non-Closure by MCC Categories</div><div class="card-body"><table class="table table-sm table-hover"><thead><tr><th>MCC</th><th>Non-Closure Rate</th></tr></thead><tbody><tr><td>5812</td><td>25%</td></tr><tr><td>7995</td><td>22%</td></tr><tr><td>5942</td><td>18%</td></tr></tbody></table></div></div></div><div class="col-lg-6 mb-4"><div class="card h-100"><div class="card-header">Top ARI Reasons by Non-Closure Rate</div><div class="card-body"><table class="table table-sm table-hover"><thead><tr><th>ARI Reason</th><th>Non-Closure Rate</th></tr></thead><tbody><tr><td>Invalid Business Address</td><td>35%</td></tr><tr><td>Incorrect Tax ID Format</td><td>28%</td></tr><tr><td>Owner Verification Failed</td><td>20%</td></tr></tbody></table></div></div></div></div>
+                <div id="input-chart-table-wrapper" class="row d-none"><div class="col-lg-6 mb-4"><div class="card h-100"><div class="card-header" id="input-chart-title"></div><div class="card-body"><canvas id="inputBurnDownChart" style="min-height: 350px;"></canvas></div></div></div><div class="col-lg-6 mb-4"><div class="card mb-3"><div class="card-header">Count by MCC</div><div class="card-body"><table class="table table-sm table-hover" id="table-by-mcc"><thead><tr><th>MCC</th><th>ARI Count</th><th>Merchants</th></tr></thead><tbody></tbody></table></div></div><div class="card mb-3"><div class="card-header">Count by Input Field</div><div class="card-body"><table class="table table-sm table-hover" id="table-by-input-field"><thead><tr><th>Input Field</th><th id="input-field-count-header">Count</th><th>Merchants</th></tr></thead><tbody></tbody></table></div></div><div class="card"><div class="card-header">Count by Instrument Type</div><div class="card-body"><table class="table table-sm table-hover" id="table-by-instrument-type"><thead><tr><th>Instrument Type</th><th id="instrument-type-count-header">Count</th><th>Merchants</th></tr></thead><tbody></tbody></table></div></div></div></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const labels = Array.from({ length: 31 }, (_, i) => `Day ${i}`);
+
+            function generateBurndownData(startValue, completedDay = -1) {
+                const ideal = [], actual = [];
+                const step = startValue > 0 ? startValue / 30 : 0;
+                for (let i = 0; i <= 30; i++) {
+                    ideal.push(Math.max(0, startValue - (step * i)));
+                    let actualValue;
+                    if (i === 0) actualValue = startValue;
+                    else if (completedDay !== -1 && i >= completedDay) actualValue = 0;
+                    else {
+                        const prev = actual[i-1];
+                        const randomness = (Math.random() - 0.45) * (step * 3);
+                        actualValue = Math.max(0, prev - step + randomness);
+                    }
+                    actual.push(actualValue);
+                }
+                return { ideal, actual };
+            }
+            
+            const okrTableData = { dsat: { title: 'Top Categories of DSAT Causing Tickets', headers: ['Category', 'Count'], rows: [['Documentation', 80], ['UI/UX', 65], ['Payment Failure', 55], ['Account Lockout', 30], ['Other', 20]] }, escalations: { title: 'Top Escalation Reasons', headers: ['Reason', 'Count'], rows: [['Payment Failure', 120], ['Account Lockout', 90], ['KYC Rejection', 50], ['Fraud Concern', 30], ['Other', 20]] }, sla: { title: 'Top Categories of SLA Exceeding Tickets', headers: ['Category', 'Count'], rows: [['Complex Investigation', 40], ['Dependency on L3', 35], ['High Volume Queue', 20], ['Agent Error', 10], ['Other', 7]] }, ccd: { title: 'Top Categories of CCD Tickets', headers: ['Category', 'Count'], rows: [['Critical Payment Failure', 20], ['Data Loss', 10], ['Security Vulnerability', 8], ['Other', 7]] }, ipt: { title: 'Top Categories of IPT > 4 Tickets', headers: ['Category', 'Count'], rows: [['Multiple Handoffs', 25], ['Insufficient Agent Training', 20], ['Complex Issue', 15], ['System Latency', 10], ['Other', 5]] }, incidents: { title: 'Top Categories of P0-P2 Incidents', headers: ['Category', 'Count'], rows: [['Site Outage', 5], ['Payment Gateway Down', 10], ['Data Breach', 2], ['Major Feature Failure', 25], ['Other', 110]] } };
+            const okrChartData = { sv: { title: 'Support Ticket (SV) Burndown', data: generateBurndownData(5000) }, dsat: { title: 'DSAT Causing Tickets Burndown', data: generateBurndownData(250) }, escalations: { title: 'Escalations Burndown', data: generateBurndownData(310) }, sla: { title: 'SLA Exceeded Tickets Burndown', data: generateBurndownData(112) }, ccd: { title: 'CCD Tickets Burndown', data: generateBurndownData(45) }, ipt: { title: 'IPT > 4 Tickets Burndown', data: generateBurndownData(75) }, incidents: { title: 'P0-P2 Incidents Burndown', data: generateBurndownData(152) } };
+            const inputChartData = { iirUnhappyFlow: { title: 'Unhappy IIRs Burndown', data: generateBurndownData(500) }, noTerminalNTFs: { title: 'No Terminal NTFs Burndown', data: generateBurndownData(200) }, rejectedInternal: { title: 'Rejected Internal Burndown', data: generateBurndownData(250) }, ari: { title: 'ARI Burndown', data: generateBurndownData(150) }, arb: { title: 'ARB Burndown', data: generateBurndownData(100) } };
+            const tableDrilldownData = { ari: { mcc: [ { key: '5812', count: 60, merchants: 50 }, { key: '7995', count: 32, merchants: 30 }], inputField: [ { key: 'Business Name', count: 45, merchants: 40 }, { key: 'Tax ID', count: 32, merchants: 30 }], instrument: [ { key: 'Credit Card', count: 80, merchants: 75 }, { key: 'Bank Account', count: 55, merchants: 50 }] }, arb: { mcc: [ { key: '5812', count: 40, merchants: 35 }, { key: '7995', count: 20, merchants: 18 }], inputField: [ { key: 'Address Line 1', count: 30, merchants: 30 }, { key: 'Tax ID', count: 20, merchants: 20 }], instrument: [ { key: 'Credit Card', count: 60, merchants: 55 }, { key: 'Bank Account', count: 40, merchants: 38 }] }, rejectedInternal: { mcc: [ { key: '4814', count: 100, merchants: 80 }, { key: '5541', count: 80, merchants: 70 }], inputField: [ { key: 'License Number', count: 90, merchants: 85 }, { key: 'Service Type', count: 60, merchants: 50 }], instrument: [ { key: 'Credit Card', count: 150, merchants: 140 }, { key: 'Bank Account', count: 100, merchants: 90 }] } };
+            tableDrilldownData.iirUnhappyFlow = { mcc: [...tableDrilldownData.ari.mcc, ...tableDrilldownData.arb.mcc, ...tableDrilldownData.rejectedInternal.mcc].reduce((acc, {key, count, merchants}) => { acc[key] = { count: (acc[key]?.count || 0) + count, merchants: (acc[key]?.merchants || 0) + merchants}; return acc; }, {}), inputField: [...tableDrilldownData.ari.inputField, ...tableDrilldownData.arb.inputField, ...tableDrilldownData.rejectedInternal.inputField].reduce((acc, {key, count, merchants}) => { acc[key] = { count: (acc[key]?.count || 0) + count, merchants: (acc[key]?.merchants || 0) + merchants}; return acc; }, {}), instrument: [...tableDrilldownData.ari.instrument, ...tableDrilldownData.arb.instrument, ...tableDrilldownData.rejectedInternal.instrument].reduce((acc, {key, count, merchants}) => { acc[key] = { count: (acc[key]?.count || 0) + count, merchants: (acc[key]?.merchants || 0) + merchants}; return acc; }, {}) };
+            Object.keys(tableDrilldownData.iirUnhappyFlow).forEach(key => { tableDrilldownData.iirUnhappyFlow[key] = Object.entries(tableDrilldownData.iirUnhappyFlow[key]).map(([k, v]) => ({key: k, ...v})); });
+
+            const chartConfig = { type: 'line', options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, title: { display: true } }, x: { title: { display: true, text: 'Days' } } }, plugins: { legend: { position: 'top' } } } };
+            function createChart(elementId, config) { const ctx = document.getElementById(elementId)?.getContext('2d'); if (!ctx) return null; return new Chart(ctx, config); }
+
+            const okrBurnDownChart = createChart('okrBurnDownChart', { ...chartConfig, data: { labels, datasets: [ { label: 'Ideal', data: okrChartData.sv.data.ideal, borderColor: 'rgba(108,117,125,0.5)', borderDash: [5,5], fill: false }, { label: 'Actual', data: okrChartData.sv.data.actual, borderColor: '#0d6efd', backgroundColor: 'rgba(13,110,253,0.1)', fill: true, tension: 0.1 } ] }, options: { ...chartConfig.options, scales: { ...chartConfig.options.scales, y: { ...chartConfig.options.scales.y, title: { ...chartConfig.options.scales.y.title, text: 'Remaining Tickets' } } } } });
+            const ntfBurnDownChart = createChart('ntfBurnDownChart', { ...chartConfig, data: { labels, datasets: [ { label: 'Ideal', data: inputChartData.noTerminalNTFs.data.ideal, borderColor: 'rgba(108,117,125,0.5)', borderDash: [5,5], fill: false }, { label: 'Actual', data: inputChartData.noTerminalNTFs.data.actual, borderColor: '#0d6efd', backgroundColor: 'rgba(13,110,253,0.1)', fill: true, tension: 0.1 } ] }, options: { ...chartConfig.options, scales: { ...chartConfig.options.scales, y: { ...chartConfig.options.scales.y, title: { ...chartConfig.options.scales.y.title, text: 'Remaining NTFs' } } } } });
+            const inputBurnDownChart = createChart('inputBurnDownChart', chartConfig);
+
+            let mirChartMerchant, mirChartMir; // Pie charts
+            const mirPieConfig = { type: 'pie', options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } } };
+            const mirPieData = { merchant: { labels: ['Dashboard', 'WhatsApp', 'Email', 'No Update'], data: [40, 25, 15, 20] }, mir: { labels: ['Dashboard', 'WhatsApp', 'Email', 'No Update Sent'], data: [55, 15, 5, 25] } }
+
+            function updateOkrDrilldown(metric) {
+                const okrChartCol = document.getElementById('okr-chart-col');
+                const okrTableCol = document.getElementById('okr-table-col');
+                document.getElementById('okr-drilldown-wrapper').classList.remove('d-none');
+                if (metric === 'sv') { okrTableCol.classList.add('d-none'); okrChartCol.classList.remove('col-lg-7'); okrChartCol.classList.add('col-lg-12');
+                } else {
+                    okrTableCol.classList.remove('d-none'); okrChartCol.classList.remove('col-lg-12'); okrChartCol.classList.add('col-lg-7');
+                    const tableData = okrTableData[metric]; if (!tableData) return;
+                    document.getElementById('okr-table-title').textContent = tableData.title;
+                    document.getElementById('okr-table-header-col1').textContent = tableData.headers[0];
+                    document.getElementById('okr-table-header-col2').textContent = tableData.headers[1];
+                    let tbody = document.querySelector('#okr-breakdown-table tbody'); tbody.innerHTML = '';
+                    tableData.rows.forEach(row => { tbody.innerHTML += `<tr><td>${row[0]}</td><td>${row[1]}</td></tr>`; });
+                }
+            }
+
+            function setupOkrClickListener() {
+                document.querySelectorAll('#okr-tracker [data-target-chart="okr"]').forEach(cardWrapper => {
+                    cardWrapper.addEventListener('click', () => {
+                        document.querySelectorAll('#okr-tracker [data-target-chart="okr"]').forEach(el => el.querySelector('.card-kpi').classList.remove('selected'));
+                        cardWrapper.querySelector('.card-kpi').classList.add('selected');
+                        const metric = cardWrapper.dataset.metric;
+                        const newChartData = okrChartData[metric];
+                        document.getElementById('okr-chart-title').textContent = newChartData.title;
+                        okrBurnDownChart.data.datasets[0].data = newChartData.data.ideal;
+                        okrBurnDownChart.data.datasets[1].data = newChartData.data.actual;
+                        okrBurnDownChart.update();
+                        updateOkrDrilldown(metric);
+                    });
+                });
+            }
+            
+            function updateInputDrillDownTables(metric) {
+                const data = tableDrilldownData[metric];
+                if (!data) { document.querySelector('#input-chart-table-wrapper .col-lg-6:last-child').classList.add('d-none'); return; }
+                document.querySelector('#input-chart-table-wrapper .col-lg-6:last-child').classList.remove('d-none');
+                const headers = { iirUnhappyFlow: 'IIR Count', ari: 'ARI Count', arb: 'ARB Count', rejectedInternal: 'RI Count'};
+                const countHeader = headers[metric] || 'Count';
+                document.getElementById('mcc-count-header').textContent = countHeader;
+                let mccTbody = document.querySelector('#table-by-mcc tbody'); mccTbody.innerHTML = '';
+                data.mcc.sort((a, b) => b.count - a.count).forEach(row => { mccTbody.innerHTML += `<tr><td>${row.key}</td><td>${row.count}</td><td>${row.merchants}</td></tr>`; });
+                document.getElementById('input-field-count-header').textContent = countHeader;
+                let fieldTbody = document.querySelector('#table-by-input-field tbody'); fieldTbody.innerHTML = '';
+                data.inputField.sort((a, b) => b.count - a.count).forEach(row => { fieldTbody.innerHTML += `<tr><td>${row.key}</td><td>${row.count}</td><td>${row.merchants}</td></tr>`; });
+                document.getElementById('instrument-type-count-header').textContent = countHeader;
+                let instrumentTbody = document.querySelector('#table-by-instrument-type tbody'); instrumentTbody.innerHTML = '';
+                data.instrument.sort((a, b) => b.count - a.count).forEach(row => { instrumentTbody.innerHTML += `<tr><td>${row.key}</td><td>${row.count}</td><td>${row.merchants}</td></tr>`; });
+            }
+            
+            function setupInputMatrixListeners() {
+                const mainCards = document.querySelectorAll('#input-matrix [data-target-chart="input"]');
+                const subCards = document.querySelectorAll('#input-matrix [data-target-chart="input-sub"]');
+                const wrappers = { sub: document.getElementById('iir-sub-cards'), chartTable: document.getElementById('input-chart-table-wrapper'), ntf: document.getElementById('ntf-chart-table-wrapper'), mir: document.getElementById('mir-charts-wrapper'), ari: document.getElementById('ari-tables-wrapper') };
+                const inputChartTitleEl = document.getElementById('input-chart-title');
+
+                mainCards.forEach(card => {
+                    card.addEventListener('click', () => {
+                        const metric = card.dataset.metric;
+                        mainCards.forEach(c => c.querySelector('.card-kpi').classList.remove('selected'));
+                        card.querySelector('.card-kpi').classList.add('selected');
+                        Object.values(wrappers).forEach(w => w.classList.add('d-none'));
+
+                        if (metric === 'iir-main') { wrappers.sub.classList.remove('d-none'); document.querySelector('#iir-sub-cards [data-metric="iirUnhappyFlow"]').click();
+                        } else if (metric === 'ntf-main') { wrappers.ntf.classList.remove('d-none');
+                        } else if (metric === 'mir-main') {
+                            wrappers.mir.classList.remove('d-none');
+                            if (!mirChartMerchant) { mirChartMerchant = createChart('mir-chart-merchant', { ...mirPieConfig, data: { labels: mirPieData.merchant.labels, datasets: [{ data: mirPieData.merchant.data, backgroundColor: ['#0d6efd', '#6c757d', '#198754', '#dc3545'] }] } }); }
+                            if (!mirChartMir) { mirChartMir = createChart('mir-chart-mir', { ...mirPieConfig, data: { labels: mirPieData.mir.labels, datasets: [{ data: mirPieData.mir.data, backgroundColor: ['#0d6efd', '#6c757d', '#198754', '#dc3545'] }] } }); }
+                        } else if (metric === 'ari-main') { wrappers.ari.classList.remove('d-none'); } // No chart for ARI tables, so no newChartData
+                    });
+                });
+
+                subCards.forEach(card => {
+                    card.addEventListener('click', () => {
+                        const metric = card.dataset.metric;
+                        subCards.forEach(c => c.querySelector('.card-kpi').classList.remove('selected'));
+                        card.querySelector('.card-kpi').classList.add('selected');
+                        wrappers.chartTable.classList.remove('d-none');
+                        updateInputDrillDownTables(metric); 
+                        const newChartData = inputChartData[metric];
+                        if (newChartData) {
+                            inputChartTitleEl.textContent = newChartData.title;
+                            inputBurnDownChart.data.datasets[0].data = newChartData.data.ideal;
+                            inputBurnDownChart.data.datasets[1].data = newChartData.data.actual;
+                            inputBurnDownChart.update();
+                        }
+                    });
+                });
+            }
+
+            setupOkrClickListener();
+            setupInputMatrixListeners();
+
+            // Default State
+            document.getElementById('okr-drilldown-wrapper').classList.add('d-none');
+            const defaultMainInputCard = document.querySelector('#input-matrix [data-metric="iir-main"]');
+            if (defaultMainInputCard) defaultMainInputCard.click();
+        });
+    </script>
+</body>
+</html>
