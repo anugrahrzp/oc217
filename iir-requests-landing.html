@@ -318,6 +318,33 @@
             color: #991b1b;
         }
 
+        /* MIR Group Styling */
+        .mir-group-1 {
+            border-left: 3px solid #667eea;
+        }
+
+        .mir-group-1:first-of-type td:first-child {
+            position: relative;
+        }
+
+        .mir-group-1:first-of-type td:first-child::before {
+            content: '📦';
+            position: absolute;
+            left: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+        }
+
+        /* Add subtle background for grouped rows */
+        .mir-group-1 {
+            background-color: #fafbff;
+        }
+
+        .mir-group-1:hover {
+            background-color: #f3f4ff !important;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .left-sidebar {
@@ -398,6 +425,10 @@
                         <div class="detail-label">Updated At</div>
                         <div class="detail-value">18th Nov, 2025 03:27 PM</div>
                     </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Total IIRs</div>
+                        <div class="detail-value">3 terminals requested</div>
+                    </div>
                 </div>
             </div>
 
@@ -460,9 +491,9 @@
                 <table>
                     <thead>
                         <tr>
+                            <th>MIR ID</th>
                             <th>IIR ID</th>
                             <th>Merchant ID</th>
-                            <th>Gateway</th>
                             <th>Method</th>
                             <th>MIR Template</th>
                             <th>Terminal Type</th>
@@ -472,12 +503,14 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
+                        <tr class="mir-group-1">
+                            <td>
+                                <a href="#">MIR_001</a>
+                            </td>
                             <td>
                                 <a href="iir-details.html">RhA4vSMTxO7rGA</a>
                             </td>
                             <td>Rglg1taogLY2pd</td>
-                            <td>amex</td>
                             <td>card</td>
                             <td>OC217 - SEBI Template</td>
                             <td>
@@ -489,12 +522,14 @@
                                 <span class="status-badge requested">requested</span>
                             </td>
                         </tr>
-                        <tr>
+                        <tr class="mir-group-1">
+                            <td>
+                                <a href="#">MIR_001</a>
+                            </td>
                             <td>
                                 <a href="#">RhB2xKLMnP8qHA</a>
                             </td>
                             <td>Rglg1taogLY2pd</td>
-                            <td>hdfc</td>
                             <td>card</td>
                             <td>OC217 - SEBI Template</td>
                             <td>
@@ -506,12 +541,14 @@
                                 <span class="status-badge approved">approved</span>
                             </td>
                         </tr>
-                        <tr>
+                        <tr class="mir-group-1">
+                            <td>
+                                <a href="#">MIR_001</a>
+                            </td>
                             <td>
                                 <a href="#">RhC5zNPQrS9tJB</a>
                             </td>
                             <td>Rglg1taogLY2pd</td>
-                            <td>icici</td>
                             <td>card</td>
                             <td>OC217 - SEBI Template</td>
                             <td>
