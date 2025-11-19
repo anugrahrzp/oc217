@@ -517,6 +517,67 @@
             color: #667eea;
         }
 
+        .radio-option.selected {
+            border-color: #667eea;
+            background-color: #eef2ff;
+        }
+
+        .radio-option.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: #f7fafc;
+            position: relative;
+        }
+
+        .radio-option.disabled::after {
+            content: 'Already Requested';
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #10b981;
+            background-color: #d1fae5;
+            padding: 4px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .radio-option.disabled:hover {
+            background-color: #f7fafc;
+        }
+
+        .radio-option.disabled input[type="radio"] {
+            cursor: not-allowed;
+        }
+
+        .radio-option.disabled label {
+            cursor: not-allowed;
+            color: #a0aec0;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 15px;
+            color: #2d3748;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: #a0aec0;
+        }
+
         .advanced-options-header {
             display: flex;
             justify-content: space-between;
@@ -898,8 +959,30 @@
                             <p class="method-subtitle">Allow customers to create mandates via UPI.</p>
                         </div>
                         <div class="method-actions">
-                            <button class="request-btn" onclick="openModal('autopay')">Request</button>
+                            <span class="status-badge activated">Requested</span>
+                            <button class="request-btn" onclick="openModal('autopay')">Submit another VPA</button>
                         </div>
+                    </div>
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                            <span style="font-size: 13px; color: #718096; font-weight: 500;">Submitted VPAs:</span>
+                            <span style="display: inline-block; padding: 2px 8px; background-color: #667eea; color: white; border-radius: 10px; font-size: 11px; font-weight: 600;">2</span>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #4a5568;">
+                                <span style="font-weight: 600;">HDFC Bank</span>
+                                <span style="color: #718096;">•</span>
+                                <span style="font-family: monospace; color: #667eea;">merchant***@validhdfc</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #4a5568;">
+                                <span style="font-weight: 600;">ICICI Bank</span>
+                                <span style="color: #718096;">•</span>
+                                <span style="font-family: monospace; color: #667eea;">merchant***@valicici</span>
+                            </div>
+                        </div>
+                        <a href="#" style="display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; font-size: 13px; color: #667eea; text-decoration: none; font-weight: 500;">
+                            View all VPAs →
+                        </a>
                     </div>
                 </div>
             </div>
@@ -993,8 +1076,8 @@
                     </div>
                 </div>
 
-                <!-- Screen 3: UPI Details Collection -->
-                <div id="screen3" class="screen" style="display: none;">
+                <!-- Screen 3a: Bank Selection -->
+                <div id="screen3a" class="screen" style="display: none;">
                     <div class="progress-bar">
                         <div class="progress-step completed">
                             <div class="progress-label">Notice</div>
@@ -1003,96 +1086,249 @@
                             <div class="progress-label">Instructions</div>
                         </div>
                         <div class="progress-step active">
-                            <div class="progress-label">Details</div>
+                            <div class="progress-label">Step <span id="wizard-current-step">1</span> of <span id="wizard-total-steps">5</span></div>
                         </div>
                     </div>
 
                     <div class="modal-header">
-                        <div class="terminal-type-badge" id="terminalTypeBadge">UPI AUTOPAY</div>
-                        <h2 class="modal-title" id="detailsModalTitle">Enter Your Validated UPI Details</h2>
-                        <p class="modal-description" id="detailsModalDescription">
-                            Provide your SEBI-validated UPI information and settlement details
+                        <div class="terminal-type-badge" id="terminalTypeBadge">UPI ONE-TIME</div>
+                        <h2 class="modal-title">Select Your VPA's Bank</h2>
+                        <p class="modal-description">
+                            Choose the bank where your SEBI-validated UPI is registered
                         </p>
                     </div>
                     <div class="modal-body">
-                        <form id="upiDetailsForm">
-                            <div class="form-group">
-                                <label>Select your VPA's Bank <span class="required">*</span></label>
-                                <div class="radio-group" id="bankSelection">
-                                    <div class="radio-option">
-                                        <input type="radio" id="hdfc" name="bank" value="hdfc" onchange="handleBankSelection()">
-                                        <label for="hdfc">HDFC Bank</label>
-                                    </div>
-                                    <div class="radio-option">
-                                        <input type="radio" id="icici" name="bank" value="icici" onchange="handleBankSelection()">
-                                        <label for="icici">ICICI Bank</label>
-                                    </div>
-                                    <div class="radio-option">
-                                        <input type="radio" id="axis" name="bank" value="axis" onchange="handleBankSelection()">
-                                        <label for="axis">Axis Bank</label>
-                                    </div>
+                        <div class="form-group">
+                            <div class="radio-group" id="bankSelection">
+                                <div class="radio-option" onclick="selectBankWizard('hdfc')">
+                                    <input type="radio" id="hdfc" name="bank" value="hdfc">
+                                    <label for="hdfc">
+                                        <div style="font-weight: 600; margin-bottom: 4px;">HDFC Bank</div>
+                                        <div style="font-size: 13px; color: #718096;">Most popular for mutual fund transactions</div>
+                                    </label>
+                                </div>
+                                <div class="radio-option" onclick="selectBankWizard('icici')">
+                                    <input type="radio" id="icici" name="bank" value="icici">
+                                    <label for="icici">
+                                        <div style="font-weight: 600; margin-bottom: 4px;">ICICI Bank</div>
+                                        <div style="font-size: 13px; color: #718096;">Requires MID instead of account details</div>
+                                    </label>
+                                </div>
+                                <div class="radio-option" onclick="selectBankWizard('axis')">
+                                    <input type="radio" id="axis" name="bank" value="axis">
+                                    <label for="axis">
+                                        <div style="font-weight: 600; margin-bottom: 4px;">Axis Bank</div>
+                                        <div style="font-size: 13px; color: #718096;">Full account and IFSC required</div>
+                                    </label>
                                 </div>
                             </div>
-
-                            <div class="form-group">
-                                <label>
-                                    VPA (UPI ID) <span class="required">*</span>
-                                    <span class="info-icon">ℹ️
-                                        <span class="tooltip-text">You might have gotten your VPA from the SEBI portal. Only the VPA provided to SEBI needs to be entered here.</span>
-                                    </span>
-                                </label>
-                                <input type="text" id="vpaInput" placeholder="Select a bank first" oninput="validateVPA()" disabled>
-                                <p class="helper-text" id="vpaHelperText">Example: yourbusiness.mf@validhdfc</p>
-                                <p class="error-text" id="vpaError">VPA must use a valid handle for the selected bank.</p>
-                            </div>
-
-                            <div class="form-group">
-                                <label>
-                                    Settlement Account Number <span class="required">*</span>
-                                    <span class="info-icon">ℹ️
-                                        <span class="tooltip-text">Only the Settlement Account Number you provided to SEBI needs to be entered here.</span>
-                                    </span>
-                                </label>
-                                <input type="text" id="accountInput" placeholder="50100123456789" oninput="validateAccount()">
-                                <p class="error-text" id="accountError">Please enter a valid account number</p>
-                            </div>
-
-                            <div class="form-group">
-                                <label>
-                                    IFSC Code <span class="required">*</span>
-                                    <span class="info-icon">ℹ️
-                                        <span class="tooltip-text">Only the IFSC Code you provided to SEBI needs to be entered here.</span>
-                                    </span>
-                                </label>
-                                <input type="text" id="ifscInput" placeholder="HDFC0001234" oninput="validateIFSC()" maxlength="11">
-                                <p class="helper-text">11-character IFSC code from approved syndicate banks</p>
-                                <p class="error-text" id="ifscError">Please enter a valid 11-character IFSC code</p>
-                            </div>
-
-                            <div class="form-group" id="iciciMidGroup" style="display: none;">
-                                <label>
-                                    ICICI MID <span class="required">*</span>
-                                </label>
-                                <input type="text" id="iciciMidInput" placeholder="ICICI12345" oninput="validateForm()">
-                                <div class="icici-info" id="iciciInfo">
-                                    <p>📌 ICICI MID is required for @validicici VPA handles</p>
-                                </div>
-                                <p class="error-text" id="iciciMidError">ICICI MID is required for ICICI VPAs</p>
-                            </div>
-
-                            <div class="form-group">
-                                <div class="checkbox-container" style="background: #f7fafc; border-color: #e2e8f0; margin-top: 16px;" onclick="toggleSoftNudge()">
-                                    <input type="checkbox" id="softNudgeCheckbox" onchange="validateForm()">
-                                    <label for="softNudgeCheckbox" style="color: #4a5568; font-weight: 500;">I confirm that the details provided are correct. I understand that any incorrect information will cause a delay in processing with our banking partners.</label>
-                                </div>
-                            </div>
-                        </form>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button class="btn btn-secondary" onclick="goToScreen(2)">← Back</button>
-                        <button class="btn btn-primary" id="submitBtn" disabled onclick="submitForm()">
-                            Submit for Review
-                        </button>
+                        <button class="btn btn-primary" id="wizard-next-btn" disabled onclick="wizardNextStep()">Continue →</button>
+                    </div>
+                </div>
+
+                <!-- Screen 3b: VPA Entry -->
+                <div id="screen3b" class="screen" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-step completed">
+                            <div class="progress-label">Notice</div>
+                        </div>
+                        <div class="progress-step completed">
+                            <div class="progress-label">Instructions</div>
+                        </div>
+                        <div class="progress-step active">
+                            <div class="progress-label">Step <span id="wizard-current-step-2">2</span> of <span id="wizard-total-steps-2">5</span></div>
+                        </div>
+                    </div>
+
+                    <div class="modal-header">
+                        <div class="terminal-type-badge" id="terminalTypeBadge2">UPI ONE-TIME</div>
+                        <h2 class="modal-title">Enter Your VPA</h2>
+                        <p class="modal-description">
+                            Provide your Virtual Payment Address (UPI ID) for <strong id="selected-bank-display">your bank</strong>
+                        </p>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>VPA (UPI ID) <span class="required">*</span></label>
+                            <input type="text" class="form-input" id="vpaInputWizard" placeholder="yourbusiness.mf@validhdfc" oninput="validateVPAWizard()">
+                            <p class="helper-text" id="vpaHelperWizard">Your SEBI-validated UPI address ending with your bank's handle</p>
+                            <p class="error-text" id="vpaErrorWizard" style="display: none;">Please enter a valid VPA</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="wizardPreviousStep()">← Back</button>
+                        <button class="btn btn-primary" id="wizard-next-btn-2" disabled onclick="wizardNextStep()">Continue →</button>
+                    </div>
+                </div>
+
+                <!-- Screen 3c: Account Number (for HDFC/Axis) -->
+                <div id="screen3c" class="screen" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-step completed">
+                            <div class="progress-label">Notice</div>
+                        </div>
+                        <div class="progress-step completed">
+                            <div class="progress-label">Instructions</div>
+                        </div>
+                        <div class="progress-step active">
+                            <div class="progress-label">Step <span id="wizard-current-step-3">3</span> of <span id="wizard-total-steps-3">5</span></div>
+                        </div>
+                    </div>
+
+                    <div class="modal-header">
+                        <div class="terminal-type-badge" id="terminalTypeBadge3">UPI ONE-TIME</div>
+                        <h2 class="modal-title">Settlement Account Number</h2>
+                        <p class="modal-description">
+                            Enter the account number linked to your VPA
+                        </p>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Settlement Account Number <span class="required">*</span></label>
+                            <input type="text" class="form-input" id="accountInputWizard" placeholder="50100123456789" oninput="validateAccountWizard()">
+                            <p class="helper-text">Your bank account number for settlement</p>
+                            <p class="error-text" id="accountErrorWizard" style="display: none;">Account number must be 9-18 digits</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="wizardPreviousStep()">← Back</button>
+                        <button class="btn btn-primary" id="wizard-next-btn-3" disabled onclick="wizardNextStep()">Continue →</button>
+                    </div>
+                </div>
+
+                <!-- Screen 3d: ICICI MID -->
+                <div id="screen3d-icici" class="screen" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-step completed">
+                            <div class="progress-label">Notice</div>
+                        </div>
+                        <div class="progress-step completed">
+                            <div class="progress-label">Instructions</div>
+                        </div>
+                        <div class="progress-step active">
+                            <div class="progress-label">Step <span id="wizard-current-step-icici">3</span> of <span id="wizard-total-steps-icici">4</span></div>
+                        </div>
+                    </div>
+
+                    <div class="modal-header">
+                        <div class="terminal-type-badge" id="terminalTypeBadge4">UPI ONE-TIME</div>
+                        <h2 class="modal-title">ICICI Merchant ID</h2>
+                        <p class="modal-description">
+                            Enter your ICICI MID for UPI transactions
+                        </p>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>ICICI MID <span class="required">*</span></label>
+                            <input type="text" class="form-input" id="iciciMidInputWizard" placeholder="Enter ICICI Merchant ID" oninput="validateMIDWizard()">
+                            <p class="helper-text">Your ICICI Merchant ID for UPI one-time payments</p>
+                            <p class="error-text" id="midErrorWizard" style="display: none;">Please enter a valid ICICI MID</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="wizardPreviousStep()">← Back</button>
+                        <button class="btn btn-primary" id="wizard-next-btn-icici" disabled onclick="wizardNextStep()">Continue →</button>
+                    </div>
+                </div>
+
+                <!-- Screen 3e: IFSC Code (only for HDFC/Axis) -->
+                <div id="screen3e" class="screen" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-step completed">
+                            <div class="progress-label">Notice</div>
+                        </div>
+                        <div class="progress-step completed">
+                            <div class="progress-label">Instructions</div>
+                        </div>
+                        <div class="progress-step active">
+                            <div class="progress-label">Step <span id="wizard-current-step-4">4</span> of <span id="wizard-total-steps-4">5</span></div>
+                        </div>
+                    </div>
+
+                    <div class="modal-header">
+                        <div class="terminal-type-badge" id="terminalTypeBadge5">UPI ONE-TIME</div>
+                        <h2 class="modal-title">IFSC Code</h2>
+                        <p class="modal-description">
+                            Enter the 11-character IFSC code of your bank branch
+                        </p>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>IFSC Code <span class="required">*</span></label>
+                            <input type="text" class="form-input" id="ifscInputWizard" placeholder="HDFC0001234" maxlength="11" oninput="validateIFSCWizard()">
+                            <p class="helper-text">11-character IFSC code from approved syndicate banks</p>
+                            <p class="error-text" id="ifscErrorWizard" style="display: none;">IFSC code must be exactly 11 characters</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="wizardPreviousStep()">← Back</button>
+                        <button class="btn btn-primary" id="wizard-next-btn-4" disabled onclick="wizardNextStep()">Continue →</button>
+                    </div>
+                </div>
+
+                <!-- Screen 3f: Confirmation -->
+                <div id="screen3f" class="screen" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-step completed">
+                            <div class="progress-label">Notice</div>
+                        </div>
+                        <div class="progress-step completed">
+                            <div class="progress-label">Instructions</div>
+                        </div>
+                        <div class="progress-step active">
+                            <div class="progress-label">Step <span id="wizard-current-step-5">5</span> of <span id="wizard-total-steps-5">5</span></div>
+                        </div>
+                    </div>
+
+                    <div class="modal-header">
+                        <div class="terminal-type-badge" id="terminalTypeBadge6">UPI ONE-TIME</div>
+                        <h2 class="modal-title">Confirm Your Details</h2>
+                        <p class="modal-description">
+                            Please review all information before submitting
+                        </p>
+                    </div>
+                    <div class="modal-body">
+                        <div class="confirmation-card" style="background: #f7fafc; border: 2px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 2px solid #e2e8f0;">
+                                <div style="width: 40px; height: 40px; background-color: #667eea; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px;">🏦</div>
+                                <div>
+                                    <h3 style="font-size: 16px; font-weight: 600; color: #1a202c; margin-bottom: 2px;">Bank & VPA Details</h3>
+                                    <p style="font-size: 13px; color: #718096; margin: 0;">Verify your information is correct</p>
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
+                                <span style="font-size: 13px; color: #718096; font-weight: 500; text-transform: uppercase;">Bank</span>
+                                <span style="font-size: 14px; color: #1a202c; font-weight: 600;" id="confirm-bank-wizard">-</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
+                                <span style="font-size: 13px; color: #718096; font-weight: 500; text-transform: uppercase;">VPA (UPI ID)</span>
+                                <span style="font-size: 14px; color: #1a202c; font-weight: 600; word-break: break-all; text-align: right; max-width: 60%;" id="confirm-vpa-wizard">-</span>
+                            </div>
+                            <div id="confirm-account-row-wizard" style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
+                                <span style="font-size: 13px; color: #718096; font-weight: 500; text-transform: uppercase;">Settlement Account</span>
+                                <span style="font-size: 14px; color: #1a202c; font-weight: 600;" id="confirm-account-wizard">-</span>
+                            </div>
+                            <div id="confirm-ifsc-row-wizard" style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
+                                <span style="font-size: 13px; color: #718096; font-weight: 500; text-transform: uppercase;">IFSC Code</span>
+                                <span style="font-size: 14px; color: #1a202c; font-weight: 600;" id="confirm-ifsc-wizard">-</span>
+                            </div>
+                            <div id="confirm-mid-row-wizard" style="display: none; justify-content: space-between; padding: 12px 0;">
+                                <span style="font-size: 13px; color: #718096; font-weight: 500; text-transform: uppercase;">ICICI MID</span>
+                                <span style="font-size: 14px; color: #1a202c; font-weight: 600;" id="confirm-mid-wizard">-</span>
+                            </div>
+                        </div>
+                        <div class="checkbox-container" style="background: #f7fafc; border-color: #e2e8f0; margin-top: 16px;" onclick="toggleConfirmCheckbox()">
+                            <input type="checkbox" id="confirmCheckboxWizard">
+                            <label for="confirmCheckboxWizard" style="color: #4a5568; font-weight: 500;">I confirm that all details provided are accurate and complete. I take full responsibility for the settlement account information and understand that any errors may delay onboarding with our banking partners.</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="wizardPreviousStep()">← Back</button>
+                        <button class="btn btn-primary" id="wizard-submit-btn" disabled onclick="submitFormWizard()">Submit for Review</button>
                     </div>
                 </div>
 
@@ -1106,10 +1342,34 @@
                                 Your UPI terminal setup request has been submitted for review.
                                 Our compliance team will verify your details and activate your terminal within 48 hours.
                             </p>
-                            <p class="success-description" style="font-size: 14px; color: #4a5568;">
+                            <p class="success-description" style="font-size: 14px; color: #4a5568; margin-bottom: 24px;">
                                 You will receive an email notification once your terminal is activated.
                             </p>
-                            <button class="btn btn-primary" onclick="closeModal()">Done</button>
+
+                            <!-- Saved VPAs Section -->
+                            <div id="savedVPAsSection" style="background: #f7fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                                    <h3 style="font-size: 14px; font-weight: 600; color: #2d3748; text-transform: uppercase; letter-spacing: 0.5px; margin: 0;">Saved VPAs</h3>
+                                    <span style="display: inline-block; padding: 4px 10px; background-color: #667eea; color: white; border-radius: 12px; font-size: 12px; font-weight: 600;" id="vpasCount">1</span>
+                                </div>
+                                <div id="savedVPAsList">
+                                    <!-- Dynamic VPA items will be added here -->
+                                </div>
+                            </div>
+
+                            <!-- Add More Prompt -->
+                            <div style="text-align: center; padding: 20px; background-color: #eef2ff; border: 2px dashed #667eea; border-radius: 12px; margin-bottom: 20px;">
+                                <p style="font-size: 15px; color: #2d3748; font-weight: 500; margin-bottom: 4px;">Do you have more SEBI verified VPAs?</p>
+                                <span style="font-size: 13px; color: #718096;">You can add VPAs from other banks to enable more payment options</span>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div style="display: flex; gap: 12px; margin-top: 20px;">
+                                <button class="btn btn-secondary" onclick="addAnotherVPA()" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    <span style="font-size: 16px;">+</span> Add Another VPA
+                                </button>
+                                <button class="btn btn-primary" onclick="closeModal()" style="flex: 1;">Complete Setup</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1119,6 +1379,41 @@
 
     <script>
         let selectedTerminalType = 'autopay'; // Default to autopay
+        let wizardCurrentStep = 1;
+        let wizardTotalSteps = 5;
+        let selectedBankWizard = null;
+        // Initialize with already submitted VPAs (shown in UPI Autopay card)
+        let savedVPAs = [
+            {
+                bank: 'hdfc',
+                vpa: 'merchant***@validhdfc',
+                account: '50100123456789',
+                ifsc: 'HDFC0001234',
+                iciciMid: '',
+                terminalType: 'autopay'
+            },
+            {
+                bank: 'icici',
+                vpa: 'merchant***@valicici',
+                account: '',
+                ifsc: '',
+                iciciMid: 'ICICI123456',
+                terminalType: 'autopay'
+            }
+        ];
+        const wizardFormData = {
+            bank: '',
+            vpa: '',
+            account: '',
+            ifsc: '',
+            iciciMid: ''
+        };
+
+        const bankNames = {
+            'hdfc': 'HDFC Bank',
+            'icici': 'ICICI Bank',
+            'axis': 'Axis Bank'
+        };
 
         function openModal(terminalType = 'autopay') {
             selectedTerminalType = terminalType;
@@ -1127,33 +1422,77 @@
             // Update modal content based on terminal type
             const instructionsTitle = document.getElementById('instructionsModalTitle');
             const instructionsDescription = document.getElementById('instructionsModalDescription');
-            const detailsTitle = document.getElementById('detailsModalTitle');
-            const detailsDescription = document.getElementById('detailsModalDescription');
-            const terminalTypeBadge = document.getElementById('terminalTypeBadge');
+            const terminalTypeBadges = document.querySelectorAll('[id^="terminalTypeBadge"]');
 
             if (terminalType === 'autopay') {
                 instructionsTitle.textContent = 'Steps to Generate Validated UPI ID for Autopay';
                 instructionsDescription.textContent = 'Follow these steps on the SEBI SI Portal to generate your validated UPI ID for recurring payments';
-                detailsTitle.textContent = 'Enter Your Validated UPI Autopay Details';
-                detailsDescription.textContent = 'Provide your SEBI-validated UPI information for recurring payment mandates';
-                terminalTypeBadge.textContent = 'UPI AUTOPAY';
+                terminalTypeBadges.forEach(badge => badge.textContent = 'UPI AUTOPAY');
             } else {
                 instructionsTitle.textContent = 'Steps to Generate Validated UPI ID';
                 instructionsDescription.textContent = 'Follow these steps on the SEBI SI Portal to generate your validated UPI ID for one-time payments';
-                detailsTitle.textContent = 'Enter Your Validated UPI Details';
-                detailsDescription.textContent = 'Provide your SEBI-validated UPI information for one-time payments';
-                terminalTypeBadge.textContent = 'UPI ONE-TIME';
+                terminalTypeBadges.forEach(badge => badge.textContent = 'UPI ONE-TIME');
             }
 
             goToScreen(1);
         }
 
         function closeModal() {
+            // Count newly added VPAs (those added in this session, beyond the initial 2)
+            const newVPAsCount = savedVPAs.length - 2;
+
+            // Show confirmation if new VPAs were added in this session
+            if (newVPAsCount > 0) {
+                const plural = newVPAsCount > 1 ? 's' : '';
+                alert(`Successfully submitted ${newVPAsCount} new VPA${plural} for review!\n\nYou will receive email notifications when your terminal${plural} ${newVPAsCount > 1 ? 'are' : 'is'} activated.`);
+            }
+
             document.getElementById('modalOverlay').classList.remove('active');
             resetForm();
         }
 
         function goToScreen(screenNum) {
+            // Special handling for screen 3 - redirect to wizard
+            if (screenNum === 3) {
+                // Reset wizard state
+                wizardCurrentStep = 1;
+                selectedBankWizard = null;
+                wizardFormData.bank = '';
+                wizardFormData.vpa = '';
+                wizardFormData.account = '';
+                wizardFormData.ifsc = '';
+                wizardFormData.iciciMid = '';
+
+                // Reset form inputs
+                document.querySelectorAll('#bankSelection .radio-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                document.querySelectorAll('input[name="bank"]').forEach(input => {
+                    input.checked = false;
+                });
+                document.getElementById('vpaInputWizard').value = '';
+                document.getElementById('accountInputWizard').value = '';
+                document.getElementById('ifscInputWizard').value = '';
+                document.getElementById('iciciMidInputWizard').value = '';
+                if (document.getElementById('confirmCheckboxWizard')) {
+                    document.getElementById('confirmCheckboxWizard').checked = false;
+                }
+
+                // Hide all screens and show wizard start
+                document.querySelectorAll('.screen').forEach(screen => {
+                    screen.style.display = 'none';
+                });
+                document.getElementById('screen3a').style.display = 'block';
+                document.getElementById('wizard-next-btn').disabled = true;
+
+                // Update bank options to show disabled state for already requested banks
+                updateBankOptionsState();
+
+                document.querySelector('.modal').scrollTop = 0;
+                return;
+            }
+
+            // Original logic for other screens
             // Hide all screens
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.style.display = 'none';
@@ -1344,6 +1683,345 @@
                 closeModal();
             }
         });
+
+        // WIZARD FUNCTIONS
+        function updateBankOptionsState() {
+            // Get list of already requested banks for the CURRENT terminal type only
+            const requestedBanks = savedVPAs
+                .filter(vpa => vpa.terminalType === selectedTerminalType)
+                .map(vpa => vpa.bank);
+
+            // Update each bank option
+            ['hdfc', 'icici', 'axis'].forEach(bank => {
+                const option = document.querySelector(`.radio-option[onclick*="${bank}"]`);
+                const input = document.getElementById(bank);
+
+                if (requestedBanks.includes(bank)) {
+                    option.classList.add('disabled');
+                    input.disabled = true;
+                } else {
+                    option.classList.remove('disabled');
+                    input.disabled = false;
+                }
+            });
+        }
+
+        function selectBankWizard(bank) {
+            // Check if bank is already requested for the current terminal type
+            const requestedBanks = savedVPAs
+                .filter(vpa => vpa.terminalType === selectedTerminalType)
+                .map(vpa => vpa.bank);
+            if (requestedBanks.includes(bank)) {
+                alert('This bank has already been requested for this payment type. Please select a different bank.');
+                return;
+            }
+
+            selectedBankWizard = bank;
+            wizardFormData.bank = bank;
+
+            // Visual selection
+            document.querySelectorAll('#bankSelection .radio-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+            document.getElementById(bank).checked = true;
+
+            // Calculate total steps
+            if (bank === 'icici') {
+                wizardTotalSteps = 4; // Bank -> VPA -> MID -> Confirm
+            } else {
+                wizardTotalSteps = 5; // Bank -> VPA -> Account -> IFSC -> Confirm
+            }
+
+            document.getElementById('wizard-total-steps').textContent = wizardTotalSteps;
+            document.getElementById('wizard-next-btn').disabled = false;
+        }
+
+        function validateVPAWizard() {
+            const vpa = document.getElementById('vpaInputWizard').value.trim();
+            const vpaError = document.getElementById('vpaErrorWizard');
+            const nextBtn = document.getElementById('wizard-next-btn-2');
+
+            if (vpa.length > 0) {
+                if (vpa.includes('@') && vpa.length > 5) {
+                    vpaError.style.display = 'none';
+                    nextBtn.disabled = false;
+                    return true;
+                } else {
+                    vpaError.style.display = 'block';
+                    nextBtn.disabled = true;
+                    return false;
+                }
+            }
+            nextBtn.disabled = vpa.length === 0;
+            return vpa.length > 0;
+        }
+
+        function validateAccountWizard() {
+            const account = document.getElementById('accountInputWizard').value.trim();
+            const accountError = document.getElementById('accountErrorWizard');
+            const nextBtn = document.getElementById('wizard-next-btn-3');
+
+            if (account.length > 0) {
+                if (account.length >= 9 && account.length <= 18 && /^\d+$/.test(account)) {
+                    accountError.style.display = 'none';
+                    nextBtn.disabled = false;
+                    return true;
+                } else {
+                    accountError.style.display = 'block';
+                    nextBtn.disabled = true;
+                    return false;
+                }
+            }
+            nextBtn.disabled = account.length === 0;
+            return account.length > 0;
+        }
+
+        function validateMIDWizard() {
+            const mid = document.getElementById('iciciMidInputWizard').value.trim();
+            const midError = document.getElementById('midErrorWizard');
+            const nextBtn = document.getElementById('wizard-next-btn-icici');
+
+            if (mid.length > 0) {
+                if (mid.length >= 5) {
+                    midError.style.display = 'none';
+                    nextBtn.disabled = false;
+                    return true;
+                } else {
+                    midError.style.display = 'block';
+                    nextBtn.disabled = true;
+                    return false;
+                }
+            }
+            nextBtn.disabled = mid.length === 0;
+            return mid.length > 0;
+        }
+
+        function validateIFSCWizard() {
+            const ifsc = document.getElementById('ifscInputWizard').value.trim().toUpperCase();
+            const ifscError = document.getElementById('ifscErrorWizard');
+            const nextBtn = document.getElementById('wizard-next-btn-4');
+
+            document.getElementById('ifscInputWizard').value = ifsc;
+
+            if (ifsc.length > 0) {
+                if (ifsc.length === 11 && /^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc)) {
+                    ifscError.style.display = 'none';
+                    nextBtn.disabled = false;
+                    return true;
+                } else {
+                    ifscError.style.display = 'block';
+                    nextBtn.disabled = true;
+                    return false;
+                }
+            }
+            nextBtn.disabled = ifsc.length === 0;
+            return ifsc.length > 0;
+        }
+
+        function toggleConfirmCheckbox() {
+            const checkbox = document.getElementById('confirmCheckboxWizard');
+            checkbox.checked = !checkbox.checked;
+            document.getElementById('wizard-submit-btn').disabled = !checkbox.checked;
+        }
+
+        function wizardNextStep() {
+            if (wizardCurrentStep === 1) {
+                // From bank selection to VPA
+                if (!selectedBankWizard) return;
+
+                document.getElementById('selected-bank-display').textContent = bankNames[selectedBankWizard];
+                wizardCurrentStep = 2;
+                showWizardScreen('screen3b');
+                document.getElementById('wizard-current-step-2').textContent = '2';
+                document.getElementById('wizard-total-steps-2').textContent = wizardTotalSteps;
+
+            } else if (wizardCurrentStep === 2) {
+                // From VPA to Account/MID
+                if (!validateVPAWizard()) return;
+                wizardFormData.vpa = document.getElementById('vpaInputWizard').value.trim();
+
+                if (selectedBankWizard === 'icici') {
+                    wizardCurrentStep = 3;
+                    showWizardScreen('screen3d-icici');
+                    document.getElementById('wizard-current-step-icici').textContent = '3';
+                    document.getElementById('wizard-total-steps-icici').textContent = '4';
+                } else {
+                    wizardCurrentStep = 3;
+                    showWizardScreen('screen3c');
+                    document.getElementById('wizard-current-step-3').textContent = '3';
+                    document.getElementById('wizard-total-steps-3').textContent = wizardTotalSteps;
+                }
+
+            } else if (wizardCurrentStep === 3) {
+                if (selectedBankWizard === 'icici') {
+                    // From ICICI MID to Confirmation
+                    if (!validateMIDWizard()) return;
+                    wizardFormData.iciciMid = document.getElementById('iciciMidInputWizard').value.trim();
+
+                    wizardCurrentStep = 4;
+                    populateConfirmationWizard();
+                    showWizardScreen('screen3f');
+                    document.getElementById('wizard-current-step-5').textContent = '4';
+                    document.getElementById('wizard-total-steps-5').textContent = '4';
+                } else {
+                    // From Account to IFSC
+                    if (!validateAccountWizard()) return;
+                    wizardFormData.account = document.getElementById('accountInputWizard').value.trim();
+
+                    wizardCurrentStep = 4;
+                    showWizardScreen('screen3e');
+                    document.getElementById('wizard-current-step-4').textContent = '4';
+                    document.getElementById('wizard-total-steps-4').textContent = wizardTotalSteps;
+                }
+
+            } else if (wizardCurrentStep === 4) {
+                if (selectedBankWizard === 'icici') {
+                    // Submit for ICICI
+                    submitFormWizard();
+                } else {
+                    // From IFSC to Confirmation
+                    if (!validateIFSCWizard()) return;
+                    wizardFormData.ifsc = document.getElementById('ifscInputWizard').value.trim();
+
+                    wizardCurrentStep = 5;
+                    populateConfirmationWizard();
+                    showWizardScreen('screen3f');
+                    document.getElementById('wizard-current-step-5').textContent = '5';
+                    document.getElementById('wizard-total-steps-5').textContent = wizardTotalSteps;
+                }
+            }
+        }
+
+        function wizardPreviousStep() {
+            if (wizardCurrentStep === 2) {
+                wizardCurrentStep = 1;
+                showWizardScreen('screen3a');
+                document.getElementById('wizard-next-btn').disabled = !selectedBankWizard;
+
+            } else if (wizardCurrentStep === 3) {
+                wizardCurrentStep = 2;
+                showWizardScreen('screen3b');
+
+            } else if (wizardCurrentStep === 4) {
+                wizardCurrentStep = 3;
+                if (selectedBankWizard === 'icici') {
+                    showWizardScreen('screen3d-icici');
+                } else {
+                    showWizardScreen('screen3c');
+                }
+
+            } else if (wizardCurrentStep === 5) {
+                wizardCurrentStep = 4;
+                showWizardScreen('screen3e');
+            }
+        }
+
+        function showWizardScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.style.display = 'none';
+            });
+            document.getElementById(screenId).style.display = 'block';
+            document.querySelector('.modal').scrollTop = 0;
+        }
+
+        function populateConfirmationWizard() {
+            document.getElementById('confirm-bank-wizard').textContent = bankNames[wizardFormData.bank];
+            document.getElementById('confirm-vpa-wizard').textContent = wizardFormData.vpa;
+
+            if (selectedBankWizard === 'icici') {
+                document.getElementById('confirm-account-row-wizard').style.display = 'none';
+                document.getElementById('confirm-ifsc-row-wizard').style.display = 'none';
+                document.getElementById('confirm-mid-row-wizard').style.display = 'flex';
+                document.getElementById('confirm-mid-wizard').textContent = wizardFormData.iciciMid;
+            } else {
+                document.getElementById('confirm-account-row-wizard').style.display = 'flex';
+                document.getElementById('confirm-ifsc-row-wizard').style.display = 'flex';
+                document.getElementById('confirm-mid-row-wizard').style.display = 'none';
+                document.getElementById('confirm-account-wizard').textContent = wizardFormData.account;
+                document.getElementById('confirm-ifsc-wizard').textContent = wizardFormData.ifsc;
+            }
+        }
+
+        function submitFormWizard() {
+            const formData = {
+                ...wizardFormData,
+                terminalType: selectedTerminalType
+            };
+
+            console.log('Wizard form submitted with data:', formData);
+
+            // Save VPA to the list
+            savedVPAs.push({...formData});
+
+            // Update saved VPAs display
+            updateSavedVPAsList();
+
+            // Show success screen
+            showWizardScreen('successScreen');
+            wizardCurrentStep = 1;
+        }
+
+        function updateSavedVPAsList() {
+            const container = document.getElementById('savedVPAsList');
+            const countBadge = document.getElementById('vpasCount');
+
+            container.innerHTML = '';
+            countBadge.textContent = savedVPAs.length;
+
+            savedVPAs.forEach((vpa, index) => {
+                const item = document.createElement('div');
+                item.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 14px; background-color: white; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 10px; transition: all 0.2s;';
+
+                item.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 40px; height: 40px; background-color: #667eea; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px;">🏦</div>
+                        <div>
+                            <div style="font-size: 14px; font-weight: 600; color: #2d3748; margin-bottom: 2px;">${bankNames[vpa.bank]}</div>
+                            <div style="font-size: 12px; color: #718096;">${vpa.vpa}</div>
+                        </div>
+                    </div>
+                    <span style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; background-color: #d1fae5; color: #065f46; border-radius: 6px; font-size: 11px; font-weight: 600;">
+                        ✓ Verified
+                    </span>
+                `;
+
+                container.appendChild(item);
+            });
+        }
+
+        function addAnotherVPA() {
+            // Reset wizard form data
+            selectedBankWizard = null;
+            wizardFormData.bank = '';
+            wizardFormData.vpa = '';
+            wizardFormData.account = '';
+            wizardFormData.ifsc = '';
+            wizardFormData.iciciMid = '';
+            wizardCurrentStep = 1;
+
+            // Reset form inputs
+            document.querySelectorAll('#bankSelection .radio-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            document.querySelectorAll('input[name="bank"]').forEach(input => {
+                input.checked = false;
+            });
+            document.getElementById('vpaInputWizard').value = '';
+            document.getElementById('accountInputWizard').value = '';
+            document.getElementById('ifscInputWizard').value = '';
+            document.getElementById('iciciMidInputWizard').value = '';
+            if (document.getElementById('confirmCheckboxWizard')) {
+                document.getElementById('confirmCheckboxWizard').checked = false;
+            }
+
+            // Go back to wizard start (bank selection)
+            showWizardScreen('screen3a');
+            document.getElementById('wizard-next-btn').disabled = true;
+
+            // Update bank options to show disabled state for already requested banks
+            updateBankOptionsState();
+        }
     </script>
 </body>
 </html>
