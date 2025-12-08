@@ -1,0 +1,3292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Requisition-Guided Web Page Verification</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideOut {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(-20px); }
+        }
+        .slide-in { animation: slideIn 0.3s ease-out; }
+        .slide-out { animation: slideOut 0.3s ease-out; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+        .page-card {
+            transition: all 0.2s ease;
+        }
+        .page-card.cursor-pointer:hover {
+            transform: translateX(4px);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        iframe {
+            border: none;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans antialiased">
+
+    <!-- STEP 1: Payment Method Request Screen -->
+    <div id="confirm-url-screen" class="min-h-screen bg-gray-50">
+        <div class="max-w-7xl mx-auto px-8 py-8">
+            <!-- Breadcrumb -->
+            <div class="mb-6 flex items-center gap-2 text-sm text-gray-600">
+                <a href="#" class="hover:text-gray-900">Account & Settings</a>
+                <span>›</span>
+                <span class="text-blue-600 font-medium">Cards</span>
+            </div>
+
+            <!-- Header -->
+            <div class="mb-6">
+                <h1 class="text-2xl font-bold text-gray-900 mb-2">Cards</h1>
+                <p class="text-sm text-gray-600">Visa, Master, Amex</p>
+            </div>
+
+            <!-- Tabs -->
+            <div class="border-b border-gray-200 mb-6">
+                <div class="flex gap-8">
+                    <button class="pb-3 px-1 text-sm font-medium text-blue-600 border-b-2 border-blue-600">Cards</button>
+                    <button class="pb-3 px-1 text-sm font-medium text-gray-600 hover:text-gray-900">UPI/QR</button>
+                    <button class="pb-3 px-1 text-sm font-medium text-gray-600 hover:text-gray-900">Netbanking</button>
+                    <button class="pb-3 px-1 text-sm font-medium text-gray-600 hover:text-gray-900">EMI</button>
+                    <button class="pb-3 px-1 text-sm font-medium text-gray-600 hover:text-gray-900">Wallet</button>
+                    <button class="pb-3 px-1 text-sm font-medium text-gray-600 hover:text-gray-900">Pay Later</button>
+                    <button class="pb-3 px-1 text-sm font-medium text-gray-600 hover:text-gray-900">International Payments</button>
+                </div>
+            </div>
+
+            <!-- Alert Banner -->
+            <div class="bg-orange-50 border border-orange-200 rounded-lg px-4 py-3 mb-6 flex items-start gap-3">
+                <svg class="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+                <p class="text-sm text-orange-800">Request for Payment methods is unavailable as your account is not enabled to accept transactions.</p>
+            </div>
+
+            <!-- Know More Link -->
+            <div class="mb-6 text-right">
+                <a href="#" class="text-sm text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1">
+                    Know More about payment methods
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                    </svg>
+                </a>
+            </div>
+
+            <!-- Cards Section -->
+            <div class="bg-white border border-gray-200 rounded-lg p-6 max-w-2xl">
+                <h2 class="text-base font-semibold text-gray-900 mb-4">Domestic Cards</h2>
+
+                <!-- Card Instruments List -->
+                <div class="space-y-3">
+                    <!-- Visa Cards -->
+                    <div class="flex items-center justify-between py-3 border-b border-gray-100">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-xs">
+                                VISA
+                            </div>
+                            <span class="text-sm font-medium text-gray-900">Visa Cards</span>
+                        </div>
+                        <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded">ACTIVATED</span>
+                    </div>
+
+                    <!-- MasterCard -->
+                    <div class="flex items-center justify-between py-3 border-b border-gray-100">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-white rounded flex items-center justify-center">
+                                <div class="flex">
+                                    <div class="w-4 h-4 bg-red-500 rounded-full opacity-80"></div>
+                                    <div class="w-4 h-4 bg-orange-400 rounded-full -ml-2"></div>
+                                </div>
+                            </div>
+                            <span class="text-sm font-medium text-gray-900">MasterCard</span>
+                        </div>
+                        <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded">ACTIVATED</span>
+                    </div>
+
+                    <!-- Rupay Cards -->
+                    <div class="flex items-center justify-between py-3 border-b border-gray-100">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-green-600 rounded flex items-center justify-center">
+                                <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
+                                </svg>
+                            </div>
+                            <span class="text-sm font-medium text-gray-900">Rupay Cards</span>
+                        </div>
+                        <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded">ACTIVATED</span>
+                    </div>
+
+                    <!-- Amex Cards -->
+                    <div class="flex items-center justify-between py-3 border-b border-gray-100">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-blue-400 rounded flex items-center justify-center text-white font-bold text-xs">
+                                AMEX
+                            </div>
+                            <span class="text-sm font-medium text-gray-900">Amex Cards</span>
+                        </div>
+                        <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded">ACTIVATED</span>
+                    </div>
+
+                    <!-- Diners Club -->
+                    <div class="flex items-center justify-between py-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-blue-900 rounded flex items-center justify-center">
+                                <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                    <circle cx="8" cy="12" r="5"/>
+                                    <circle cx="16" cy="12" r="5"/>
+                                </svg>
+                            </div>
+                            <span class="text-sm font-medium text-gray-900">Diners Club</span>
+                        </div>
+                        <button onclick="showConfirmationPopup()" class="px-4 py-1.5 bg-blue-100 text-blue-700 text-xs font-medium rounded hover:bg-blue-200 transition-colors">
+                            Request
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Cards Recurring Section -->
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <h3 class="text-sm font-semibold text-gray-900 mb-3">Cards Recurring</h3>
+                    <p class="text-xs text-gray-500 mb-3">Enable recurring payments for subscription-based services</p>
+                    <button onclick="showConfirmationPopup()" class="px-4 py-1.5 bg-blue-100 text-blue-700 text-xs font-medium rounded hover:bg-blue-200 transition-colors">
+                        Request
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Popup -->
+    <div id="confirmation-popup" class="hidden fixed inset-0 z-50 flex items-center justify-center p-6" style="background-color: rgba(0, 0, 0, 0.5);">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-8">
+            <div class="text-center mb-6">
+                <div class="mb-4">
+                    <svg class="w-16 h-16 mx-auto text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-3">Confirm Website Verification</h3>
+                <p class="text-gray-600 mb-2">Is this the website where you want to accept payments?</p>
+
+                <div class="bg-gray-50 rounded-lg p-4 mt-4 mb-6">
+                    <div class="flex items-center gap-2 justify-center">
+                        <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+                        </svg>
+                        <span class="text-lg font-semibold text-gray-900" id="popup-website-url">https://www.myshop.com</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="closeConfirmationPopup()" class="flex-1 bg-white hover:bg-gray-50 text-gray-700 font-semibold px-6 py-3 rounded-lg transition-colors border-2 border-gray-300">
+                    Cancel
+                </button>
+                <button onclick="confirmAndContinue()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors">
+                    Yes, Continue
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- STEP 2: Questionnaire Popup -->
+    <div id="questionnaire-screen" class="hidden fixed inset-0 z-50 flex items-center justify-center p-6" style="background-color: rgba(0, 0, 0, 0.5);">
+        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-8">
+            <!-- Header with close button -->
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-gray-900">Website Verification Questions</h2>
+                <button onclick="closeQuestionnaire()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700">Question <span id="q-current">1</span> of <span id="q-total">5</span></span>
+                    <span class="text-sm text-gray-500" id="q-progress-percent">0%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div id="q-progress-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div id="question-card" class="slide-in">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4" id="question-text"></h3>
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <button onclick="answerQuestion('yes')" class="bg-green-50 hover:bg-green-100 border-2 border-green-200 hover:border-green-300 text-green-800 font-semibold py-4 px-6 rounded-lg transition-all">
+                        Yes
+                    </button>
+                    <button onclick="answerQuestion('no')" class="bg-red-50 hover:bg-red-100 border-2 border-red-200 hover:border-red-300 text-red-800 font-semibold py-4 px-6 rounded-lg transition-all">
+                        No
+                    </button>
+                </div>
+
+                <!-- Navigation -->
+                <div class="flex justify-between items-center pt-4 border-t border-gray-200">
+                    <button id="prev-btn" onclick="previousQuestion()" class="text-gray-600 hover:text-gray-900 font-medium px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        ← Previous
+                    </button>
+                    <button id="next-btn" onclick="nextQuestion()" class="text-blue-600 hover:text-blue-700 font-medium px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        Next →
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STEP 2.5: Split-Panel Scraping Interface -->
+    <div id="scraping-screen" class="hidden fixed inset-0 z-50 flex items-center justify-center p-6" style="background-color: rgba(0, 0, 0, 0.5);">
+        <div id="scraping-modal" class="bg-white rounded-lg shadow-2xl flex flex-col overflow-hidden transition-all duration-300 relative" style="width: 90%; max-width: 1400px; height: 85vh;">
+
+            <!-- Top-Right Controls -->
+            <div class="absolute top-4 right-4 z-10 flex items-center gap-3">
+                <button onclick="toggleFullScreen()" id="expand-btn" class="bg-white hover:bg-gray-100 text-gray-600 hover:text-gray-800 p-2 rounded-lg shadow-sm transition-colors" title="Expand to full screen">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+                    </svg>
+                </button>
+                <button onclick="closeScrapingScreen()" class="bg-white hover:bg-gray-100 text-gray-400 hover:text-gray-600 p-2 rounded-lg shadow-sm transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Main Content Wrapper -->
+            <div class="flex flex-1 overflow-hidden">
+                <!-- LEFT PANEL: Progress Tracker -->
+                <div class="w-2/5 bg-gray-50 border-r border-gray-200 flex flex-col">
+                    <div class="p-6 border-b border-gray-200">
+                        <h2 class="text-xl font-bold text-gray-900">Website Verification</h2>
+                        <p class="text-sm text-gray-600 mt-1">Checking your website pages</p>
+                    </div>
+
+            <div class="flex-1 overflow-y-auto p-6 space-y-6">
+                <!-- PUBLIC PAGES Section -->
+                <div id="public-pages-section">
+                    <button onclick="togglePublicPagesSection()" class="w-full flex items-center justify-between mb-3 hover:bg-gray-100 rounded-lg p-2 -ml-2 transition-colors">
+                        <div class="flex items-center gap-2">
+                            <svg id="public-pages-chevron" class="w-4 h-4 text-gray-500 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                            <h4 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">Public Pages</h4>
+                        </div>
+                        <span class="text-xs font-medium text-gray-500" id="public-pages-count">0/0</span>
+                    </button>
+                    <div id="public-pages-list" class="space-y-2">
+                        <!-- Page cards will be dynamically added here -->
+                    </div>
+                </div>
+
+                <!-- POST-LOGIN JOURNEY Section -->
+                <div id="login-section" class="hidden">
+                    <button onclick="togglePostLoginSection()" class="w-full flex items-center justify-between mb-3 hover:bg-gray-100 rounded-lg p-2 -ml-2 transition-colors">
+                        <div class="flex items-center gap-2">
+                            <svg id="postlogin-chevron" class="w-4 h-4 text-gray-500 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                            <h4 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">Post-Login Journey</h4>
+                        </div>
+                        <span class="text-xs font-medium text-gray-500" id="post-login-count">0 captured</span>
+                    </button>
+                    <div id="postlogin-pages-content" class="mb-3">
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-3">
+                            <div class="flex items-start gap-3">
+                                <svg class="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div>
+                                    <p class="text-sm font-medium text-blue-900">Capture as many screens as needed</p>
+                                    <p class="text-xs text-blue-700 mt-1">Log in and navigate through your app. Click "Capture This Page" for each screen you want to save.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="login-pages-list" class="space-y-2">
+                            <!-- Captured post-login screens will be dynamically added here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KYC DOCUMENTS Section -->
+                <div id="kyc-section">
+                    <button onclick="toggleKycSection()" class="w-full flex items-center justify-between mb-3 hover:bg-gray-100 rounded-lg p-2 -ml-2 transition-colors">
+                        <div class="flex items-center gap-2">
+                            <svg id="kyc-chevron" class="w-4 h-4 text-gray-500 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                            <h4 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">KYC Documents</h4>
+                        </div>
+                        <span class="text-xs font-medium text-gray-500" id="kyc-count">0/0</span>
+                    </button>
+                    <div id="kyc-documents-content">
+                        <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-3">
+                            <div class="flex items-start gap-3">
+                                <svg class="w-5 h-5 text-purple-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <div>
+                                    <p class="text-sm font-medium text-purple-900">Upload your business documents</p>
+                                    <p class="text-xs text-purple-700 mt-1">We'll verify your documents using AI analysis.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="kyc-documents-list" class="space-y-2">
+                            <!-- KYC documents will be dynamically added here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer: Overall Progress -->
+            <div class="p-6 border-t border-gray-200 bg-white">
+                <div class="mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm font-medium text-gray-700">Overall Progress</span>
+                        <span class="text-sm font-medium text-gray-900" id="overall-progress-text">0/0</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div id="overall-progress-bar" class="bg-indigo-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Default Action Button -->
+                <button id="complete-btn" onclick="handleCompleteButton()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    Complete & Continue →
+                </button>
+
+                <!-- Report Review Actions (Hidden by default, shown when report is displayed) -->
+                <div id="report-review-actions" class="hidden flex items-center gap-3">
+                    <button onclick="downloadCombinedReport()" class="flex-1 flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        Download PDF
+                    </button>
+                    <button onclick="approveCombinedReport()" class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Approve & Continue
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: Current Page View -->
+        <div class="w-3/5 flex items-center justify-center relative">
+
+            <!-- State 1: Initial/Loading -->
+            <div id="scraping-initial-state" class="text-center">
+                <div class="mb-6">
+                    <svg class="w-20 h-20 mx-auto text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-2">Starting Verification...</h3>
+                <p class="text-gray-600">Please wait while we check your pages</p>
+            </div>
+
+            <!-- State: Scraping Progress -->
+            <div id="scraping-progress" class="hidden w-full h-full flex items-center justify-center">
+                <div class="max-w-lg w-full p-8">
+                    <div class="bg-white rounded-xl shadow-lg p-8 border border-gray-200">
+                        <!-- Animated Icon -->
+                        <div class="mb-6 flex justify-center">
+                            <div class="relative">
+                                <svg class="w-20 h-20 text-indigo-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <svg class="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Progress Title -->
+                        <h3 class="text-2xl font-bold text-gray-900 text-center mb-2" id="progress-title">Processing...</h3>
+                        <p class="text-gray-600 text-center mb-8" id="progress-description">Please wait</p>
+
+                        <!-- Progress Steps -->
+                        <div class="space-y-4">
+                            <!-- Step 1: Reading Page -->
+                            <div class="flex items-center gap-4" id="progress-step-1">
+                                <div class="flex-shrink-0">
+                                    <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center" id="progress-icon-1">
+                                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-700">Reading your page</p>
+                                    <p class="text-xs text-gray-500">Capturing page structure and content</p>
+                                </div>
+                            </div>
+
+                            <!-- Step 2: Analyzing -->
+                            <div class="flex items-center gap-4" id="progress-step-2">
+                                <div class="flex-shrink-0">
+                                    <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center" id="progress-icon-2">
+                                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-700">AI Analysis in progress</p>
+                                    <p class="text-xs text-gray-500">Validating page content and structure</p>
+                                </div>
+                            </div>
+
+                            <!-- Step 3: Generating Report -->
+                            <div class="flex items-center gap-4" id="progress-step-3">
+                                <div class="flex-shrink-0">
+                                    <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center" id="progress-icon-3">
+                                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-700">Generating report</p>
+                                    <p class="text-xs text-gray-500">Creating verification document</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="mt-6">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="scraping-progress-bar" class="bg-indigo-600 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- State: Public Pages Complete -->
+            <div id="scraping-public-complete" class="hidden w-full h-full p-12 flex items-center justify-center">
+                <div class="max-w-2xl w-full text-center">
+                    <div class="bg-white rounded-xl shadow-lg p-8 border-2 border-green-200">
+                        <div class="mb-6">
+                            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-3">Public Pages Verified Successfully!</h3>
+                            <p class="text-gray-600 mb-6">We have successfully parsed your public website pages. All required pages have been verified and captured.</p>
+
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                                <div class="flex items-start gap-3">
+                                    <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <div class="text-left">
+                                        <p class="text-sm font-medium text-blue-900 mb-1">Next Step: Post-Login Journey</p>
+                                        <p class="text-sm text-blue-700">To continue, please click on "Proceed to Post-Login Journey" button below to start scraping pages that require authentication.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p class="text-sm text-gray-500 italic">Click the button in the left panel to proceed</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- State 2: PDF Preview (After Scraping Success) -->
+            <div id="scraping-success" class="hidden w-full h-full flex flex-col bg-gray-100">
+                <div class="bg-white border-b border-gray-200 p-4 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <div>
+                            <h3 class="text-base font-semibold text-gray-900" id="pdf-page-title">Page Analysis Report</h3>
+                            <p class="text-xs text-gray-500" id="pdf-page-url">URL will appear here</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Verified
+                        </span>
+                    </div>
+                </div>
+                <div class="flex-1 overflow-y-auto p-8">
+                    <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                        <!-- PDF-like Document -->
+                        <div class="p-12">
+                            <!-- Header -->
+                            <div class="border-b-2 border-gray-300 pb-4 mb-6">
+                                <h1 class="text-2xl font-bold text-gray-900 mb-2">Website Page Analysis Report</h1>
+                                <div class="flex justify-between text-sm text-gray-600">
+                                    <span id="pdf-doc-page-name">Page Name</span>
+                                    <span id="pdf-doc-date">Date: <span class="font-medium"></span></span>
+                                </div>
+                            </div>
+
+                            <!-- Screenshot Section -->
+                            <div class="mb-8">
+                                <h2 class="text-lg font-semibold text-gray-900 mb-4">Page Screenshot</h2>
+                                <div class="border border-gray-300 rounded-lg overflow-hidden bg-gray-50">
+                                    <div id="pdf-screenshot" class="w-full aspect-video bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+                                        <div class="text-center">
+                                            <svg class="w-16 h-16 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                            <p class="text-sm text-gray-500">Screenshot Preview</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- LLM Analysis Section -->
+                            <div class="mb-8">
+                                <h2 class="text-lg font-semibold text-gray-900 mb-4">AI Analysis</h2>
+                                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+                                    <div class="flex items-start gap-3">
+                                        <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                        </svg>
+                                        <div class="flex-1">
+                                            <p class="text-sm font-medium text-blue-900 mb-2">Page Verification Summary</p>
+                                            <p class="text-sm text-blue-800 leading-relaxed" id="pdf-llm-analysis">
+                                                This page has been successfully verified and meets all requirements for payment method activation. The page structure, content, and accessibility have been validated.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Technical Details -->
+                            <div class="mb-8">
+                                <h2 class="text-lg font-semibold text-gray-900 mb-4">Technical Details</h2>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                        <p class="text-xs font-medium text-gray-500 mb-1">Confidence Score</p>
+                                        <p class="text-lg font-bold text-gray-900" id="pdf-confidence">95%</p>
+                                    </div>
+                                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                        <p class="text-xs font-medium text-gray-500 mb-1">Verification Status</p>
+                                        <p class="text-lg font-bold text-green-600">Passed</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Footer -->
+                            <div class="border-t border-gray-300 pt-4 text-center">
+                                <p class="text-xs text-gray-500">This report was automatically generated by the Website Verification System</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- State 3: Active Scraping (Failed) -->
+            <div id="scraping-failed" class="hidden w-full h-full p-12 flex items-center justify-center">
+                <div class="max-w-2xl w-full">
+                    <div class="bg-white rounded-xl shadow-lg p-8 border-2 border-amber-200">
+                        <div class="flex items-start gap-4 mb-6">
+                            <div class="flex-shrink-0">
+                                <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-bold text-gray-900 mb-2" id="failed-page-title">Need Your Help</h3>
+                                <p class="text-gray-600 mb-4">We couldn't automatically find this page. Please help us locate it.</p>
+                                <div class="flex items-center gap-2 mb-4">
+                                    <span class="text-sm font-medium text-gray-700">Confidence:</span>
+                                    <span class="text-sm font-bold text-amber-600" id="failed-confidence">0%</span>
+                                    <div class="flex-1 bg-gray-200 rounded-full h-2">
+                                        <div id="failed-confidence-bar" class="bg-amber-500 h-2 rounded-full transition-all" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <p class="text-sm font-medium text-gray-700 mb-3">Choose an option:</p>
+                            <button onclick="provideUrlDirectly()" class="w-full bg-indigo-50 hover:bg-indigo-100 border-2 border-indigo-200 text-indigo-900 font-semibold py-4 px-6 rounded-lg transition-all text-left flex items-center gap-3">
+                                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                                </svg>
+                                <div>
+                                    <div class="font-semibold">Provide URL Directly</div>
+                                    <div class="text-sm text-indigo-700">Enter the exact URL of this page</div>
+                                </div>
+                            </button>
+                            <button onclick="openBrowseMode()" class="w-full bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 text-blue-900 font-semibold py-4 px-6 rounded-lg transition-all text-left flex items-center gap-3">
+                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                                <div>
+                                    <div class="font-semibold">Browse & Capture</div>
+                                    <div class="text-sm text-blue-700">Navigate to the page and capture it</div>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- State 4: Manual Iframe -->
+            <div id="scraping-iframe" class="hidden w-full h-full flex flex-col">
+                <!-- Header with just instruction text and controls -->
+                <div class="bg-indigo-600 text-white p-4 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <span class="font-medium" id="iframe-instruction-text">Navigate to the page you want to capture</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="toggleIframeSize()" class="p-2 hover:bg-indigo-700 rounded transition-colors" title="Toggle fullscreen">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+                            </svg>
+                        </button>
+                        <button onclick="closeIframeModal()" class="p-2 hover:bg-indigo-700 rounded transition-colors" title="Close">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Iframe Content -->
+                <iframe id="manual-iframe" class="flex-1 w-full" src="about:blank"></iframe>
+
+                <!-- Bottom Action Panel -->
+                <div class="bg-white border-t border-gray-200 p-4 flex items-center justify-between">
+                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span>Navigate to different pages and capture screenshots as needed</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="captureCurrentPage()" class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors shadow-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            Capture This Page
+                        </button>
+                        <button id="done-capturing-btn" onclick="finishPostLoginCapture()" class="hidden flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors shadow-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Done Capturing
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- State 5: Provide URL Directly -->
+            <div id="scraping-provide-url" class="hidden w-full h-full p-12 flex items-center justify-center">
+                <div class="max-w-2xl w-full">
+                    <div class="bg-white rounded-xl shadow-lg p-8 border-2 border-indigo-200">
+                        <div class="text-center mb-6">
+                            <div class="mb-4">
+                                <svg class="w-16 h-16 mx-auto text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-2" id="provide-url-page-title">Provide URL</h3>
+                            <p class="text-gray-600 mb-6">Enter the exact URL of this page</p>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Page URL</label>
+                                <input id="provide-url-input" type="url" placeholder="https://example.com/page" class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                <p class="text-xs text-gray-500 mt-2">
+                                    <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    You can add a path or subdomain, but must use the same base domain
+                                </p>
+                            </div>
+                            <button onclick="scrapeProvidedUrl()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors">
+                                Scrape This URL →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- State 6: Page Detail View -->
+            <div id="scraping-page-detail" class="hidden w-full h-full flex flex-col">
+                <!-- Header with gradient -->
+                <div class="bg-gradient-to-r from-indigo-600 to-blue-600 text-white p-6">
+                    <h3 class="text-2xl font-bold mb-4" id="detail-page-title">Page Title</h3>
+
+                    <!-- URL Input Row -->
+                    <div class="mb-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <input id="detail-page-url" type="url" readonly class="flex-1 bg-white bg-opacity-20 text-white placeholder-white placeholder-opacity-60 border border-white border-opacity-30 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50" placeholder="https://example.com/page">
+                            <button id="detail-edit-btn" onclick="toggleEditUrl()" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-semibold px-4 py-2 rounded-lg transition-colors">
+                                Edit URL
+                            </button>
+                            <button id="detail-save-btn" onclick="saveAndRescrape()" class="hidden bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors">
+                                Save & Rescrape
+                            </button>
+                        </div>
+                        <p id="detail-url-hint" class="hidden text-xs text-white opacity-75">
+                            <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            You can add a path or subdomain, but the base domain cannot be changed
+                        </p>
+                    </div>
+
+                    <!-- Confidence Score -->
+                    <div id="detail-confidence-section" class="flex items-center gap-3">
+                        <span class="text-sm font-medium opacity-90">Confidence Score:</span>
+                        <span class="text-lg font-bold" id="detail-confidence">0%</span>
+                        <div class="flex-1 bg-white bg-opacity-20 rounded-full h-2 max-w-xs">
+                            <div id="detail-confidence-bar" class="h-2 rounded-full transition-all" style="width: 0%; background-color: rgba(255, 255, 255, 0.8);"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content Area: Page Preview -->
+                <div class="flex-1 overflow-hidden bg-gray-100">
+                    <iframe id="detail-page-iframe" class="w-full h-full bg-white"></iframe>
+                </div>
+            </div>
+
+            <!-- State 7: Login Credentials Form -->
+            <div id="scraping-login-form" class="hidden w-full h-full overflow-y-auto">
+                <div class="max-w-3xl mx-auto p-12">
+                    <div class="text-center mb-8">
+                        <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Post-Login Journey</h3>
+                        <p class="text-gray-600">Provide your credentials and app URL to capture post-login pages</p>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">App URL</label>
+                            <input id="login-app-url" type="url" placeholder="https://app.yourwebsite.com" class="w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Username/Email</label>
+                            <input id="login-username" type="text" placeholder="test@example.com" class="w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                            <input id="login-password" type="password" placeholder="••••••••" class="w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+
+                        <button onclick="proceedWithLogin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors text-base">
+                            Continue to Login →
+                        </button>
+
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-start gap-3">
+                            <svg class="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            </svg>
+                            <p class="text-sm text-gray-600">Your credentials are securely stored and encrypted. We only use them to help you navigate through your application.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- State 7.5: Single KYC Document Upload -->
+            <div id="kyc-single-upload" class="hidden w-full h-full flex items-center justify-center">
+                <div class="max-w-2xl w-full p-8">
+                    <div class="bg-white rounded-xl shadow-lg p-8 border border-gray-200">
+                        <!-- Document Header -->
+                        <div class="mb-6">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-900" id="kyc-upload-title">Upload Document</h3>
+                                    <p class="text-sm text-gray-500" id="kyc-upload-required">Required</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Upload Area -->
+                        <div id="kyc-single-upload-area" class="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-purple-400 transition-colors cursor-pointer mb-6">
+                            <input type="file" id="kyc-single-file-input" class="hidden" accept=".pdf,.jpg,.jpeg,.png">
+                            <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                            </svg>
+                            <p class="text-base font-medium text-gray-700 mb-1">Drop your file here, or <span class="text-purple-600">browse</span></p>
+                            <p class="text-sm text-gray-500">Supports: PDF, JPG, PNG (Max 10MB)</p>
+                        </div>
+
+                        <!-- File Preview (Hidden by default) -->
+                        <div id="kyc-single-file-preview" class="hidden mb-6">
+                            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <svg class="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                    </svg>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900" id="kyc-single-filename">document.pdf</p>
+                                        <p class="text-xs text-gray-500" id="kyc-single-filesize">2.4 MB</p>
+                                    </div>
+                                </div>
+                                <button onclick="removeKycSingleFile()" class="text-red-600 hover:text-red-700 p-2 hover:bg-red-50 rounded transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex items-center gap-3">
+                            <button id="kyc-single-upload-btn" onclick="uploadKycSingleDocument()" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                                Upload & Verify
+                            </button>
+                            <button onclick="closeKycSingleUpload()" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- State 8: KYC Document Upload -->
+            <div id="kyc-upload-screen" class="hidden w-full h-full overflow-y-auto bg-gray-50">
+                <div class="max-w-4xl mx-auto p-12">
+                    <div class="text-center mb-8">
+                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">KYC Document Verification</h3>
+                        <p class="text-gray-600">Upload your business documents for AI-powered verification</p>
+                    </div>
+
+                    <div class="space-y-6" id="kyc-documents-upload-container">
+                        <!-- Document upload cards will be added dynamically -->
+                    </div>
+
+                    <div class="mt-8 flex justify-end">
+                        <button id="verify-kyc-btn" onclick="verifyAllKycDocuments()" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            Verify Documents →
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- State 9: Combined PDF Report (All Post-Login Captures) -->
+            <div id="combined-pdf-report" class="hidden w-full h-full flex flex-col bg-gray-100">
+                <div class="bg-white border-b border-gray-200 p-4">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <div>
+                            <h3 class="text-base font-semibold text-gray-900">Complete Verification Report</h3>
+                            <p class="text-xs text-gray-500">Review all captured pages and documents</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PDF Report Content -->
+                <div class="flex-1 overflow-y-auto p-8">
+                    <div class="max-w-5xl mx-auto bg-white shadow-lg rounded-lg">
+                        <!-- Report Header -->
+                        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-8 rounded-t-lg">
+                            <h1 class="text-3xl font-bold mb-2">Website Verification Report</h1>
+                            <p class="text-indigo-100 text-sm" id="report-date">Generated on [Date]</p>
+                            <p class="text-indigo-100 text-sm mt-1" id="report-website">Website: [URL]</p>
+                        </div>
+
+                        <!-- Summary Section -->
+                        <div class="p-8 border-b border-gray-200">
+                            <h2 class="text-2xl font-bold text-gray-900 mb-4">Verification Summary</h2>
+                            <div class="grid grid-cols-4 gap-6">
+                                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                                    <div class="text-green-600 text-sm font-medium mb-1">Public Pages</div>
+                                    <div class="text-3xl font-bold text-green-700" id="summary-public-count">0</div>
+                                    <div class="text-xs text-green-600 mt-1">Successfully verified</div>
+                                </div>
+                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                    <div class="text-blue-600 text-sm font-medium mb-1">Post-Login Screens</div>
+                                    <div class="text-3xl font-bold text-blue-700" id="summary-postlogin-count">0</div>
+                                    <div class="text-xs text-blue-600 mt-1">Captured screens</div>
+                                </div>
+                                <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                                    <div class="text-purple-600 text-sm font-medium mb-1">KYC Documents</div>
+                                    <div class="text-3xl font-bold text-purple-700" id="summary-kyc-count">0</div>
+                                    <div class="text-xs text-purple-600 mt-1">Verified documents</div>
+                                </div>
+                                <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                                    <div class="text-indigo-600 text-sm font-medium mb-1">Overall Status</div>
+                                    <div class="text-lg font-bold text-indigo-700">Complete</div>
+                                    <div class="text-xs text-indigo-600 mt-1">Ready for activation</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Public Pages Section -->
+                        <div class="p-8 border-b border-gray-200">
+                            <h2 class="text-2xl font-bold text-gray-900 mb-6">Public Pages</h2>
+                            <div id="report-public-pages" class="space-y-6">
+                                <!-- Public pages will be inserted here -->
+                            </div>
+                        </div>
+
+                        <!-- Post-Login Pages Section -->
+                        <div class="p-8 border-b border-gray-200">
+                            <h2 class="text-2xl font-bold text-gray-900 mb-6">Post-Login Journey</h2>
+                            <div id="report-postlogin-pages" class="space-y-8">
+                                <!-- Post-login captures will be inserted here -->
+                            </div>
+                        </div>
+
+                        <!-- KYC Documents Section -->
+                        <div class="p-8">
+                            <h2 class="text-2xl font-bold text-gray-900 mb-6">KYC Documents</h2>
+                            <div id="report-kyc-documents" class="space-y-6">
+                                <!-- KYC documents will be inserted here -->
+                            </div>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="bg-gray-50 p-6 rounded-b-lg border-t border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div class="text-sm text-gray-600">
+                                    <p class="font-medium">Generated by Razorpay Website Verification</p>
+                                    <p class="text-xs mt-1">This report contains AI-analyzed screenshots and verification data</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-xs text-gray-500">Report ID: #WV-<span id="report-timestamp"></span></p>
+                                    <p class="text-xs text-gray-500 mt-1">Status: <span class="text-green-600 font-medium">Approved</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="hidden fixed bottom-6 right-6 bg-gray-900 text-white px-6 py-3 rounded-lg shadow-lg z-50">
+        <p id="toast-message"></p>
+    </div>
+
+    <script>
+        // ===== STATE MANAGEMENT =====
+        const questions = [
+            { id: 'about', text: 'Do you have an About page?', pageLabel: 'About Us' },
+            { id: 'products', text: 'Do you have a Products or Services page?', pageLabel: 'Products/Services' },
+            { id: 'pricing', text: 'Do you have a Pricing page?', pageLabel: 'Pricing' },
+            { id: 'contact', text: 'Do you have a Contact page?', pageLabel: 'Contact' },
+            { id: 'login', text: 'Do you have pages that require login?', pageLabel: 'Post-Login Journey' }
+        ];
+
+        // Simulating that this was collected during onboarding
+        let merchantWebsiteUrl = 'https://www.myshop.com';
+
+        let questionnaireState = {
+            currentIndex: 0,
+            answers: {},
+            isAnimating: false
+        };
+
+        let scrapingResults = {
+            pages: [],
+            pending: [],
+            completed: [],
+            failed: [],
+            currentIndex: 0,
+            total: 0,
+            loginCredentials: null,
+            loginCredentialsProvided: false,
+            currentPageId: null,
+            viewingPageId: null,
+            postLoginCaptures: [], // Dynamic list of captured post-login screens
+            postLoginCaptureCount: 0,
+            kycDocuments: [],
+            kycCompleted: 0
+        };
+
+        // KYC document types
+        const kycDocumentTypes = [
+            { id: 'pan', label: 'PAN Card', required: true },
+            { id: 'gst', label: 'GST Certificate', required: true },
+            { id: 'bank', label: 'Bank Statement', required: true },
+            { id: 'business', label: 'Business Registration', required: true }
+        ];
+
+        // ===== UTILITY FUNCTIONS =====
+        let isFullScreen = false;
+
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function showElement(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function hideElement(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        function showToast(message, duration = 3000) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            toastMessage.textContent = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, duration);
+        }
+
+        function toggleFullScreen() {
+            const modal = document.getElementById('scraping-modal');
+            const scrapingScreen = document.getElementById('scraping-screen');
+            const expandBtn = document.getElementById('expand-btn');
+
+            isFullScreen = !isFullScreen;
+
+            if (isFullScreen) {
+                // Expand to full screen
+                modal.style.width = '100%';
+                modal.style.maxWidth = '100%';
+                modal.style.height = '100vh';
+                modal.style.borderRadius = '0';
+                scrapingScreen.style.padding = '0';
+
+                // Change icon to compress
+                expandBtn.innerHTML = `
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25"></path>
+                    </svg>
+                `;
+                expandBtn.title = 'Exit full screen';
+            } else {
+                // Return to modal size
+                modal.style.width = '90%';
+                modal.style.maxWidth = '1400px';
+                modal.style.height = '85vh';
+                modal.style.borderRadius = '0.5rem';
+                scrapingScreen.style.padding = '1.5rem';
+
+                // Change icon back to expand
+                expandBtn.innerHTML = `
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+                    </svg>
+                `;
+                expandBtn.title = 'Expand to full screen';
+            }
+        }
+
+        function closeScrapingScreen() {
+            hideElement('scraping-screen');
+            showElement('confirm-url-screen');
+
+            // Reset to modal size if was in fullscreen
+            if (isFullScreen) {
+                toggleFullScreen();
+            }
+        }
+
+        // ===== INITIALIZATION =====
+        // When page loads, show the confirmation screen with the pre-filled merchant URL
+        window.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('confirm-website-url').textContent = merchantWebsiteUrl;
+            document.getElementById('popup-website-url').textContent = merchantWebsiteUrl;
+        });
+
+        function showConfirmationPopup() {
+            showElement('confirmation-popup');
+        }
+
+        function closeConfirmationPopup() {
+            hideElement('confirmation-popup');
+        }
+
+        function loadMockPageInIframe(iframeId, pageTitle) {
+            const iframe = document.getElementById(iframeId);
+
+            const mockHTML = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <style>
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+
+                        nav { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; color: white; }
+                        nav .logo { font-size: 1.5rem; font-weight: bold; }
+                        nav .menu { display: flex; gap: 2rem; }
+                        nav .menu a { color: white; text-decoration: none; }
+
+                        .hero { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 4rem 2rem; text-align: center; }
+                        .hero h1 { font-size: 3rem; margin-bottom: 1rem; color: #2d3748; }
+                        .hero p { font-size: 1.25rem; color: #4a5568; margin-bottom: 2rem; }
+                        .hero button { background: #667eea; color: white; padding: 1rem 2rem; border: none; border-radius: 0.5rem; font-size: 1rem; cursor: pointer; }
+
+                        .content { padding: 4rem 2rem; max-width: 1200px; margin: 0 auto; }
+                        .content h2 { font-size: 2rem; margin-bottom: 2rem; color: #2d3748; }
+                        .content p { color: #4a5568; line-height: 1.8; margin-bottom: 1.5rem; font-size: 1.1rem; }
+
+                        footer { background: #2d3748; color: white; padding: 2rem; text-align: center; margin-top: 4rem; }
+                    </style>
+                </head>
+                <body>
+                    <nav>
+                        <div class="logo">YourBrand</div>
+                        <div class="menu">
+                            <a href="#">Home</a>
+                            <a href="#">About</a>
+                            <a href="#">Products</a>
+                            <a href="#">Pricing</a>
+                            <a href="#">Contact</a>
+                        </div>
+                    </nav>
+
+                    <div class="hero">
+                        <h1>${pageTitle}</h1>
+                        <p>This is a mock preview of your ${pageTitle.toLowerCase()} page</p>
+                    </div>
+
+                    <div class="content">
+                        <h2>Sample Content</h2>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.</p>
+                        <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                        <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
+                    </div>
+
+                    <footer>
+                        <p>&copy; 2024 YourBrand. All rights reserved.</p>
+                    </footer>
+                </body>
+                </html>
+            `;
+
+            iframe.srcdoc = mockHTML;
+        }
+
+        function confirmAndContinue() {
+            hideElement('confirmation-popup');
+            // Keep the first screen visible in background
+            showElement('questionnaire-screen');
+            renderQuestion();
+        }
+
+        function closeQuestionnaire() {
+            hideElement('questionnaire-screen');
+        }
+
+        function renderQuestion() {
+            const question = questions[questionnaireState.currentIndex];
+            document.getElementById('question-text').textContent = question.text;
+            document.getElementById('q-current').textContent = questionnaireState.currentIndex + 1;
+            document.getElementById('q-total').textContent = questions.length;
+
+            const progress = ((questionnaireState.currentIndex + 1) / questions.length) * 100;
+            document.getElementById('q-progress-bar').style.width = progress + '%';
+            document.getElementById('q-progress-percent').textContent = Math.round(progress) + '%';
+
+            // Update navigation buttons
+            document.getElementById('prev-btn').disabled = questionnaireState.currentIndex === 0;
+            document.getElementById('next-btn').disabled = !questionnaireState.answers[question.id];
+        }
+
+        async function answerQuestion(answer) {
+            if (questionnaireState.isAnimating) return;
+
+            const question = questions[questionnaireState.currentIndex];
+            questionnaireState.answers[question.id] = answer;
+
+            // Enable next button
+            document.getElementById('next-btn').disabled = false;
+
+            // Auto-advance to next question
+            if (questionnaireState.currentIndex < questions.length - 1) {
+                await delay(300);
+                nextQuestion();
+            } else {
+                // Last question - proceed to scraping
+                await delay(500);
+                hideElement('questionnaire-screen');
+                startWebScraping();
+            }
+        }
+
+        async function nextQuestion() {
+            if (questionnaireState.currentIndex >= questions.length - 1) return;
+            if (questionnaireState.isAnimating) return;
+
+            questionnaireState.isAnimating = true;
+            const card = document.getElementById('question-card');
+            card.classList.add('slide-out');
+
+            await delay(300);
+            questionnaireState.currentIndex++;
+            renderQuestion();
+
+            card.classList.remove('slide-out');
+            card.classList.add('slide-in');
+            await delay(300);
+            card.classList.remove('slide-in');
+            questionnaireState.isAnimating = false;
+        }
+
+        async function previousQuestion() {
+            if (questionnaireState.currentIndex <= 0) return;
+            if (questionnaireState.isAnimating) return;
+
+            questionnaireState.isAnimating = true;
+            const card = document.getElementById('question-card');
+            card.classList.add('slide-out');
+
+            await delay(300);
+            questionnaireState.currentIndex--;
+            renderQuestion();
+
+            card.classList.remove('slide-out');
+            card.classList.add('slide-in');
+            await delay(300);
+            card.classList.remove('slide-in');
+            questionnaireState.isAnimating = false;
+        }
+
+        // ===== WEB SCRAPING FUNCTIONS =====
+        async function startWebScraping() {
+            hideElement('confirm-url-screen');
+            showElement('scraping-screen');
+
+            // Build pages list from questionnaire answers
+            const publicPages = [];
+            const loginPages = [];
+
+            questions.forEach(q => {
+                if (questionnaireState.answers[q.id] === 'yes') {
+                    const page = {
+                        id: q.id,
+                        label: q.pageLabel,
+                        section: q.id === 'login' ? 'login' : 'public',
+                        status: 'pending', // pending, searching, found, failed
+                        confidence: 0,
+                        url: q.id === 'login' ? '' : merchantWebsiteUrl // Set merchant URL for public pages by default
+                    };
+
+                    if (q.id === 'login') {
+                        loginPages.push(page);
+                    } else {
+                        publicPages.push(page);
+                    }
+                }
+            });
+
+            // Initialize KYC documents from the start
+            if (scrapingResults.kycDocuments.length === 0) {
+                scrapingResults.kycDocuments = kycDocumentTypes.map(doc => ({
+                    ...doc,
+                    status: 'pending',
+                    confidence: 0,
+                    file: null,
+                    fileName: null
+                }));
+            }
+
+            scrapingResults.pages = [...publicPages, ...loginPages];
+            scrapingResults.pending = [...publicPages, ...loginPages];
+            scrapingResults.total = scrapingResults.pages.length + scrapingResults.kycDocuments.length;
+            scrapingResults.currentIndex = 0;
+
+            // Render left panel sections
+            renderPublicPagesList(publicPages);
+            renderLoginSection(loginPages);
+            renderKycDocumentsList(); // Initialize KYC section from the start
+            updateOverallProgress();
+
+            // Start processing
+            await delay(1500);
+            processNextPage();
+        }
+
+        function renderPublicPagesList(pages) {
+            const list = document.getElementById('public-pages-list');
+            list.innerHTML = '';
+
+            if (pages.length === 0) {
+                document.getElementById('public-pages-section').classList.add('hidden');
+                return;
+            }
+
+            document.getElementById('public-pages-section').classList.remove('hidden');
+            document.getElementById('public-pages-count').textContent = `0/${pages.length}`;
+
+            pages.forEach(page => {
+                const card = document.createElement('div');
+                card.id = `page-card-${page.id}`;
+                card.className = 'page-card bg-white border border-gray-200 rounded-lg p-3 cursor-pointer hover:bg-gray-50 transition-colors';
+                card.onclick = () => viewPageDetail(page.id);
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div id="indicator-${page.id}" class="w-3 h-3 rounded-full bg-gray-300"></div>
+                        <div class="flex-1">
+                            <div class="font-medium text-sm text-gray-900">${page.label}</div>
+                            <div id="status-${page.id}" class="text-xs text-gray-500">Pending</div>
+                        </div>
+                    </div>
+                `;
+
+                list.appendChild(card);
+            });
+        }
+
+        function renderLoginSection(pages) {
+            if (pages.length === 0) {
+                document.getElementById('login-section').classList.add('hidden');
+                return;
+            }
+
+            document.getElementById('login-section').classList.remove('hidden');
+            const list = document.getElementById('login-pages-list');
+            list.innerHTML = '';
+
+            pages.forEach(page => {
+                const card = document.createElement('div');
+                card.id = `page-card-${page.id}`;
+                card.className = 'page-card bg-white border border-gray-200 rounded-lg p-3 cursor-pointer hover:bg-gray-50 transition-colors';
+                card.onclick = () => viewPageDetail(page.id);
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div id="indicator-${page.id}" class="w-3 h-3 rounded-full bg-gray-300"></div>
+                        <div class="flex-1">
+                            <div class="font-medium text-sm text-gray-900">${page.label}</div>
+                            <div id="status-${page.id}" class="text-xs text-gray-500">Pending</div>
+                        </div>
+                    </div>
+                `;
+
+                list.appendChild(card);
+            });
+        }
+
+        function renderKycDocumentsList() {
+            // Always show KYC section from the start
+            document.getElementById('kyc-section').classList.remove('hidden');
+
+            const list = document.getElementById('kyc-documents-list');
+            list.innerHTML = '';
+
+            // Update count
+            const verifiedCount = scrapingResults.kycDocuments.filter(d => d.status === 'verified').length;
+            document.getElementById('kyc-count').textContent = `${verifiedCount}/${scrapingResults.kycDocuments.length}`;
+
+            scrapingResults.kycDocuments.forEach(doc => {
+                const card = document.createElement('div');
+                card.id = `kyc-card-${doc.id}`;
+                card.className = 'page-card bg-white border border-gray-200 rounded-lg p-3 cursor-pointer hover:bg-gray-50 transition-colors';
+                card.onclick = () => viewKycDocumentDetail(doc.id);
+
+                // Determine status icon and color
+                let indicatorClass = 'bg-gray-300'; // pending
+                let statusText = 'Pending';
+
+                if (doc.status === 'uploaded') {
+                    indicatorClass = 'bg-yellow-400';
+                    statusText = 'Uploaded';
+                } else if (doc.status === 'verifying') {
+                    indicatorClass = 'bg-blue-400 animate-pulse';
+                    statusText = 'Verifying...';
+                } else if (doc.status === 'verified') {
+                    indicatorClass = 'bg-green-500';
+                    statusText = `Verified (${doc.confidence}%)`;
+                }
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div id="kyc-indicator-${doc.id}" class="w-3 h-3 rounded-full ${indicatorClass}"></div>
+                        <div class="flex-1">
+                            <div class="font-medium text-sm text-gray-900">${doc.label}</div>
+                            <div id="kyc-status-${doc.id}" class="text-xs text-gray-500">${statusText}</div>
+                        </div>
+                    </div>
+                `;
+
+                list.appendChild(card);
+            });
+        }
+
+        // Store current KYC document being uploaded
+        let currentKycDocId = null;
+        let currentKycFile = null;
+
+        function viewKycDocumentDetail(docId) {
+            const doc = scrapingResults.kycDocuments.find(d => d.id === docId);
+            if (!doc) return;
+
+            // If already verified, show the success view
+            if (doc.status === 'verified') {
+                // Show the document details (reuse existing page detail view)
+                showKycVerifiedView(doc);
+                return;
+            }
+
+            // Otherwise show upload interface
+            currentKycDocId = docId;
+            currentKycFile = null;
+
+            // Hide all other states
+            hideElement('scraping-initial-state');
+            hideElement('scraping-progress');
+            hideElement('scraping-success');
+            hideElement('scraping-failed');
+            hideElement('scraping-provide-url');
+            hideElement('scraping-login-form');
+            hideElement('scraping-iframe');
+            hideElement('scraping-public-complete');
+            hideElement('page-detail-view');
+            hideElement('kyc-upload-screen');
+            hideElement('combined-pdf-report');
+
+            // Show KYC upload state
+            showElement('kyc-single-upload');
+
+            // Update title
+            document.getElementById('kyc-upload-title').textContent = doc.label;
+            document.getElementById('kyc-upload-required').textContent = doc.required ? 'Required' : 'Optional';
+
+            // Reset upload area
+            hideElement('kyc-single-file-preview');
+            showElement('kyc-single-upload-area');
+            document.getElementById('kyc-single-upload-btn').disabled = true;
+
+            // Setup file input handler
+            const fileInput = document.getElementById('kyc-single-file-input');
+            fileInput.value = ''; // Reset input
+
+            // Add click handler to upload area
+            const uploadArea = document.getElementById('kyc-single-upload-area');
+            uploadArea.onclick = () => fileInput.click();
+
+            // Add file change handler
+            fileInput.onchange = (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    handleKycSingleFileSelect(e.target.files[0]);
+                }
+            };
+        }
+
+        function handleKycSingleFileSelect(file) {
+            currentKycFile = file;
+
+            // Show preview
+            document.getElementById('kyc-single-filename').textContent = file.name;
+            document.getElementById('kyc-single-filesize').textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+
+            hideElement('kyc-single-upload-area');
+            showElement('kyc-single-file-preview');
+            document.getElementById('kyc-single-upload-btn').disabled = false;
+        }
+
+        function removeKycSingleFile() {
+            currentKycFile = null;
+            document.getElementById('kyc-single-file-input').value = '';
+            hideElement('kyc-single-file-preview');
+            showElement('kyc-single-upload-area');
+            document.getElementById('kyc-single-upload-btn').disabled = true;
+        }
+
+        function closeKycSingleUpload() {
+            hideElement('kyc-single-upload');
+            showElement('scraping-initial-state');
+            currentKycDocId = null;
+            currentKycFile = null;
+        }
+
+        async function uploadKycSingleDocument() {
+            if (!currentKycDocId || !currentKycFile) return;
+
+            const doc = scrapingResults.kycDocuments.find(d => d.id === currentKycDocId);
+            if (!doc) return;
+
+            // Hide upload view, show progress
+            hideElement('kyc-single-upload');
+            showElement('scraping-progress');
+
+            // Update progress text
+            document.getElementById('progress-title').textContent = 'Verifying Document...';
+            document.getElementById('progress-description').textContent = `Analyzing ${doc.label}`;
+
+            // Store file info
+            doc.file = currentKycFile;
+            doc.filename = currentKycFile.name;
+            doc.status = 'verifying';
+
+            // Update left panel
+            renderKycDocumentsList();
+
+            // Simulate AI verification with progress steps
+            await delay(800);
+            updateProgressStep(1, 'completed', 'Reading document');
+
+            await delay(1200);
+            updateProgressStep(2, 'completed', 'Extracting information');
+
+            await delay(1000);
+            updateProgressStep(3, 'completed', 'Verifying authenticity');
+
+            // Mark as verified
+            const confidence = Math.floor(Math.random() * (95 - 85 + 1)) + 85;
+            doc.status = 'verified';
+            doc.confidence = confidence;
+            doc.analysis = getKycAnalysisText(doc.id);
+
+            // Update left panel
+            renderKycDocumentsList();
+            updateOverallProgress();
+
+            // Show success
+            hideElement('scraping-progress');
+            showElement('scraping-success');
+            document.getElementById('success-message').textContent = `${doc.label} verified with ${confidence}% confidence!`;
+
+            // Check if all KYC docs are verified
+            const allVerified = scrapingResults.kycDocuments.every(d => d.status === 'verified');
+            if (allVerified) {
+                setTimeout(() => {
+                    showToast('All KYC documents verified! Click Complete & Continue to generate final report.');
+                    const completeBtn = document.getElementById('complete-btn');
+                    completeBtn.disabled = false;
+                }, 1500);
+            }
+
+            // Return to initial view after 2 seconds
+            await delay(2000);
+            hideElement('scraping-success');
+            showElement('scraping-initial-state');
+
+            currentKycDocId = null;
+            currentKycFile = null;
+        }
+
+        function showKycVerifiedView(doc) {
+            // Reuse page detail view for showing verified KYC document
+            hideElement('scraping-initial-state');
+            hideElement('scraping-progress');
+            hideElement('scraping-success');
+            hideElement('scraping-failed');
+            hideElement('scraping-provide-url');
+            hideElement('scraping-login-form');
+            hideElement('scraping-iframe');
+            hideElement('scraping-public-complete');
+            hideElement('kyc-single-upload');
+            hideElement('kyc-upload-screen');
+            hideElement('combined-pdf-report');
+
+            showElement('page-detail-view');
+
+            document.getElementById('page-detail-title').textContent = doc.label;
+            document.getElementById('page-detail-url').textContent = doc.filename || 'Document uploaded';
+            document.getElementById('page-detail-confidence').textContent = doc.confidence + '%';
+            document.getElementById('page-detail-analysis').textContent = doc.analysis || 'Document verified successfully.';
+        }
+
+        function updatePageStatus(pageId, status, confidence = 0, url = '') {
+            const page = scrapingResults.pages.find(p => p.id === pageId);
+            if (!page) return;
+
+            page.status = status;
+            page.confidence = confidence;
+            page.url = url;
+
+            const indicator = document.getElementById(`indicator-${pageId}`);
+            const statusText = document.getElementById(`status-${pageId}`);
+
+            if (status === 'searching') {
+                indicator.className = 'w-3 h-3 rounded-full bg-blue-500 pulse';
+                statusText.textContent = 'Searching...';
+            } else if (status === 'found') {
+                indicator.className = 'w-3 h-3 rounded-full bg-green-500';
+
+                // For post-login pages, don't show confidence score
+                if (page.section === 'login') {
+                    statusText.textContent = 'Captured';
+                } else {
+                    // For public pages, show confidence
+                    if (confidence >= 80) {
+                        statusText.textContent = `Found (${confidence}%)`;
+                    } else if (confidence >= 60) {
+                        indicator.className = 'w-3 h-3 rounded-full bg-yellow-500';
+                        statusText.textContent = `Found (${confidence}%)`;
+                    } else {
+                        indicator.className = 'w-3 h-3 rounded-full bg-orange-500';
+                        statusText.textContent = `Low Confidence (${confidence}%)`;
+                    }
+                }
+            } else if (status === 'failed') {
+                indicator.className = 'w-3 h-3 rounded-full bg-amber-500';
+                statusText.textContent = 'Needs Help';
+            } else if (status === 'not-found') {
+                indicator.className = 'w-3 h-3 rounded-full bg-red-500';
+                statusText.textContent = 'Not Found';
+            }
+        }
+
+        function updateOverallProgress() {
+            // Calculate completed items: public pages + post-login captures + verified KYC docs
+            const publicPagesCompleted = scrapingResults.pages.filter(p => p.status === 'found').length;
+            const postLoginCompleted = scrapingResults.postLoginCaptureCount;
+            const kycCompleted = scrapingResults.kycDocuments.filter(d => d.status === 'verified').length;
+            const completed = publicPagesCompleted + postLoginCompleted + kycCompleted;
+
+            // Total should include pages + KYC documents (post-login is optional, count comes from captures)
+            const total = scrapingResults.total;
+
+            document.getElementById('overall-progress-text').textContent = `${completed}/${total}`;
+            const progress = total > 0 ? (completed / total) * 100 : 0;
+            document.getElementById('overall-progress-bar').style.width = progress + '%';
+
+            // Update public pages count
+            const publicPages = scrapingResults.pages.filter(p => p.section === 'public');
+            const publicCompleted = publicPages.filter(p => p.status === 'found').length;
+            document.getElementById('public-pages-count').textContent = `${publicCompleted}/${publicPages.length}`;
+
+            // Update KYC count
+            document.getElementById('kyc-count').textContent = `${kycCompleted}/${scrapingResults.kycDocuments.length}`;
+
+            // Check if public pages are done
+            const loginPages = scrapingResults.pages.filter(p => p.section === 'login');
+            const allPublicDone = publicPages.length > 0 && publicCompleted === publicPages.length;
+            const allLoginDone = loginPages.length === 0 || loginPages.filter(p => p.status === 'found').length === loginPages.length;
+            const allKycDone = scrapingResults.kycDocuments.length > 0 && kycCompleted === scrapingResults.kycDocuments.length;
+
+            const completeBtn = document.getElementById('complete-btn');
+
+            if (allPublicDone && loginPages.length > 0 && !scrapingResults.loginCredentialsProvided) {
+                // Public pages done, waiting for user to click proceed
+                completeBtn.disabled = false;
+                completeBtn.textContent = 'Proceed to Post-Login Journey →';
+
+                // Auto-collapse public pages section when all are verified
+                collapsePublicPagesSection();
+            } else if (scrapingResults.loginCredentialsProvided && !allLoginDone) {
+                // Post-login journey in progress, hide/disable button
+                completeBtn.disabled = true;
+                completeBtn.textContent = 'Capturing Post-Login Pages...';
+            } else if (allPublicDone && allLoginDone && !allKycDone) {
+                // Pages done, waiting for KYC documents
+                completeBtn.disabled = true;
+                completeBtn.textContent = 'Upload KYC Documents...';
+            } else if (allPublicDone && allLoginDone && allKycDone) {
+                // Everything done
+                completeBtn.disabled = false;
+                completeBtn.textContent = 'Complete & Continue →';
+            }
+        }
+
+        function togglePublicPagesSection() {
+            const list = document.getElementById('public-pages-list');
+            const chevron = document.getElementById('public-pages-chevron');
+
+            if (list.classList.contains('hidden')) {
+                // Expand
+                list.classList.remove('hidden');
+                chevron.style.transform = 'rotate(0deg)';
+            } else {
+                // Collapse
+                list.classList.add('hidden');
+                chevron.style.transform = 'rotate(-90deg)';
+            }
+        }
+
+        function collapsePublicPagesSection() {
+            const list = document.getElementById('public-pages-list');
+            const chevron = document.getElementById('public-pages-chevron');
+
+            // Only collapse if not already collapsed
+            if (!list.classList.contains('hidden')) {
+                list.classList.add('hidden');
+                chevron.style.transform = 'rotate(-90deg)';
+            }
+        }
+
+        function togglePostLoginSection() {
+            const content = document.getElementById('postlogin-pages-content');
+            const chevron = document.getElementById('postlogin-chevron');
+
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                chevron.style.transform = 'rotate(0deg)';
+            } else {
+                content.classList.add('hidden');
+                chevron.style.transform = 'rotate(-90deg)';
+            }
+        }
+
+        function collapsePostLoginSection() {
+            const content = document.getElementById('postlogin-pages-content');
+            const chevron = document.getElementById('postlogin-chevron');
+
+            if (!content.classList.contains('hidden')) {
+                content.classList.add('hidden');
+                chevron.style.transform = 'rotate(-90deg)';
+            }
+        }
+
+        function toggleKycSection() {
+            const content = document.getElementById('kyc-documents-content');
+            const chevron = document.getElementById('kyc-chevron');
+
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                chevron.style.transform = 'rotate(0deg)';
+            } else {
+                content.classList.add('hidden');
+                chevron.style.transform = 'rotate(-90deg)';
+            }
+        }
+
+        async function processNextPage() {
+            if (scrapingResults.currentIndex >= scrapingResults.pending.length) {
+                // All pages processed
+                showToast('All pages verified!');
+                return;
+            }
+
+            const page = scrapingResults.pending[scrapingResults.currentIndex];
+            scrapingResults.currentPageId = page.id;
+
+            // Check if this is a login page and credentials not provided
+            if (page.section === 'login' && !scrapingResults.loginCredentialsProvided) {
+                // Public pages are done, show success message
+                showPublicPagesComplete();
+                return;
+            }
+
+            // Start scraping this page
+            await scrapePage(page);
+        }
+
+        function showPublicPagesComplete() {
+            // Hide all other states
+            hideElement('scraping-initial-state');
+            hideElement('scraping-success');
+            hideElement('scraping-failed');
+            hideElement('scraping-iframe');
+            hideElement('scraping-provide-url');
+            hideElement('scraping-login-form');
+            hideElement('scraping-page-detail');
+
+            // Show public pages complete message
+            showElement('scraping-public-complete');
+        }
+
+        async function scrapePage(page) {
+            // Hide all right panel states
+            hideElement('scraping-initial-state');
+            hideElement('scraping-success');
+            hideElement('scraping-failed');
+            hideElement('scraping-iframe');
+            hideElement('scraping-public-complete');
+
+            // Update left panel
+            updatePageStatus(page.id, 'searching');
+
+            // Determine success early - make the 3rd page (pricing) always fail for demo
+            const isSuccess = (page.id === 'pricing') ? false : (Math.random() > 0.2);
+
+            if (!isSuccess) {
+                // Page not found - show failed state immediately
+                await delay(800); // Short delay to show "searching" state
+
+                const confidence = Math.floor(20 + Math.random() * 41); // 20-60
+                updatePageStatus(page.id, 'failed', confidence);
+
+                // Show failed state
+                document.getElementById('failed-page-title').textContent = page.label;
+                document.getElementById('failed-confidence').textContent = confidence + '%';
+                document.getElementById('failed-confidence-bar').style.width = confidence + '%';
+
+                showElement('scraping-failed');
+
+                // Move to failed
+                scrapingResults.failed.push(page);
+
+                // Don't auto-advance - wait for user intervention
+                return;
+            }
+
+            // Show progress screen for successful scraping
+            showElement('scraping-progress');
+
+            // Step 1: Reading page
+            document.getElementById('progress-title').textContent = 'Reading your page';
+            document.getElementById('progress-description').textContent = 'Capturing page structure and content';
+            document.getElementById('scraping-progress-bar').style.width = '33%';
+            document.getElementById('progress-icon-1').innerHTML = `
+                <svg class="w-5 h-5 text-indigo-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                </svg>
+            `;
+            document.getElementById('progress-icon-1').className = 'w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center';
+
+            await delay(1200);
+
+            // Step 2: AI Analysis
+            document.getElementById('progress-title').textContent = 'AI Analysis in progress';
+            document.getElementById('progress-description').textContent = 'Validating page content and structure';
+            document.getElementById('scraping-progress-bar').style.width = '66%';
+            document.getElementById('progress-icon-1').innerHTML = `
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            `;
+            document.getElementById('progress-icon-1').className = 'w-10 h-10 rounded-full bg-green-100 flex items-center justify-center';
+            document.getElementById('progress-icon-2').innerHTML = `
+                <svg class="w-5 h-5 text-indigo-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                </svg>
+            `;
+            document.getElementById('progress-icon-2').className = 'w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center';
+
+            await delay(1200);
+
+            // Step 3: Generating Report
+            document.getElementById('progress-title').textContent = 'Generating report';
+            document.getElementById('progress-description').textContent = 'Creating verification document';
+            document.getElementById('scraping-progress-bar').style.width = '100%';
+            document.getElementById('progress-icon-2').innerHTML = `
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            `;
+            document.getElementById('progress-icon-2').className = 'w-10 h-10 rounded-full bg-green-100 flex items-center justify-center';
+            document.getElementById('progress-icon-3').innerHTML = `
+                <svg class="w-5 h-5 text-indigo-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+            `;
+            document.getElementById('progress-icon-3').className = 'w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center';
+
+            await delay(1000);
+
+            // Success case - complete the process
+            const confidence = Math.floor(75 + Math.random() * 21); // 75-95
+            const url = merchantWebsiteUrl + '/' + page.id;
+
+            updatePageStatus(page.id, 'found', confidence, url);
+
+                // Generate LLM analysis based on page type
+                const llmAnalyses = {
+                    about: "This About page contains comprehensive information about the business, including company history, mission statement, and team details. The page structure is well-organized with clear sections and professional imagery. All accessibility standards are met.",
+                    products: "The Products page successfully displays the full catalog with proper categorization, pricing information, and product descriptions. E-commerce functionality is properly implemented with secure checkout integration.",
+                    pricing: "The Pricing page clearly presents all pricing tiers and subscription options. Payment processing integration is verified and functional. Terms and conditions are properly linked and accessible.",
+                    contact: "The Contact page provides multiple communication channels including email, phone, and a functional contact form. Business location and hours are clearly displayed. Form validation and security measures are in place."
+                };
+
+                // Populate PDF report
+                document.getElementById('pdf-page-title').textContent = page.label + ' - Analysis Report';
+                document.getElementById('pdf-page-url').textContent = url;
+                document.getElementById('pdf-doc-page-name').textContent = 'Page: ' + page.label;
+                document.getElementById('pdf-doc-date').querySelector('.font-medium').textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                document.getElementById('pdf-llm-analysis').textContent = llmAnalyses[page.id] || "This page has been successfully verified and meets all requirements for payment method activation. The page structure, content, and accessibility have been validated.";
+                document.getElementById('pdf-confidence').textContent = confidence + '%';
+
+                // Show mock screenshot (could be replaced with actual screenshot)
+                document.getElementById('pdf-screenshot').innerHTML = `
+                    <div class="w-full h-full bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center relative overflow-hidden">
+                        <div class="absolute inset-0 opacity-10">
+                            <div class="absolute top-4 left-4 right-4 h-16 bg-indigo-600 rounded"></div>
+                            <div class="absolute top-24 left-4 right-1/2 space-y-2">
+                                <div class="h-3 bg-gray-400 rounded"></div>
+                                <div class="h-3 bg-gray-400 rounded w-3/4"></div>
+                                <div class="h-3 bg-gray-400 rounded w-5/6"></div>
+                            </div>
+                            <div class="absolute top-24 right-4 w-1/3 h-32 bg-blue-400 rounded"></div>
+                        </div>
+                        <div class="relative z-10 text-center">
+                            <svg class="w-16 h-16 mx-auto text-indigo-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <p class="text-sm text-gray-600 font-medium">${page.label} Page</p>
+                            <p class="text-xs text-gray-500">Screenshot captured</p>
+                        </div>
+                    </div>
+                `;
+
+                // Hide progress, show PDF
+                hideElement('scraping-progress');
+                showElement('scraping-success');
+
+                // Move to completed
+                scrapingResults.completed.push(page);
+                updateOverallProgress();
+
+                // Auto-advance after 3 seconds (longer to review PDF)
+                await delay(3000);
+                scrapingResults.currentIndex++;
+                processNextPage();
+        }
+
+        function provideUrlDirectly() {
+            const currentPage = scrapingResults.pending[scrapingResults.currentIndex];
+
+            // Hide all other states
+            hideElement('scraping-success');
+            hideElement('scraping-failed');
+            hideElement('scraping-iframe');
+            hideElement('scraping-login-form');
+            hideElement('scraping-progress');
+            hideElement('scraping-public-complete');
+
+            // Show provide URL form
+            showElement('scraping-provide-url');
+            document.getElementById('provide-url-page-title').textContent = currentPage.label;
+            document.getElementById('provide-url-input').value = merchantWebsiteUrl + '/' + currentPage.id;
+            document.getElementById('provide-url-input').focus();
+        }
+
+        async function scrapeProvidedUrl() {
+            const newUrl = document.getElementById('provide-url-input').value.trim();
+
+            if (!newUrl) {
+                showToast('Please enter a URL');
+                return;
+            }
+
+            // Validate that the base domain matches the merchant's domain
+            const merchantBaseDomain = getBaseDomain(merchantWebsiteUrl);
+            const newBaseDomain = getBaseDomain(newUrl);
+
+            if (!newBaseDomain) {
+                showToast('Please enter a valid URL');
+                return;
+            }
+
+            if (merchantBaseDomain !== newBaseDomain) {
+                showToast(`URL must be from the same domain: ${merchantBaseDomain}`);
+                return;
+            }
+
+            const currentPage = scrapingResults.pending[scrapingResults.currentIndex];
+
+            // Hide provide URL form and show progress
+            hideElement('scraping-provide-url');
+            showElement('scraping-progress');
+
+            // Reset progress steps
+            document.getElementById('scraping-progress-bar').style.width = '0%';
+
+            // Step 1: Reading page
+            document.getElementById('progress-title').textContent = 'Reading your page';
+            document.getElementById('progress-description').textContent = 'Capturing page structure and content';
+            document.getElementById('scraping-progress-bar').style.width = '33%';
+            document.getElementById('progress-icon-1').innerHTML = `
+                <svg class="w-5 h-5 text-indigo-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                </svg>
+            `;
+            document.getElementById('progress-icon-1').className = 'w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center';
+
+            await delay(1200);
+
+            // Step 2: AI Analysis
+            document.getElementById('progress-title').textContent = 'AI Analysis in progress';
+            document.getElementById('progress-description').textContent = 'Validating page content and structure';
+            document.getElementById('scraping-progress-bar').style.width = '66%';
+            document.getElementById('progress-icon-1').innerHTML = `
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            `;
+            document.getElementById('progress-icon-1').className = 'w-10 h-10 rounded-full bg-green-100 flex items-center justify-center';
+            document.getElementById('progress-icon-2').innerHTML = `
+                <svg class="w-5 h-5 text-indigo-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                </svg>
+            `;
+            document.getElementById('progress-icon-2').className = 'w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center';
+
+            await delay(1200);
+
+            // Step 3: Generating Report
+            document.getElementById('progress-title').textContent = 'Generating report';
+            document.getElementById('progress-description').textContent = 'Creating verification document';
+            document.getElementById('scraping-progress-bar').style.width = '100%';
+            document.getElementById('progress-icon-2').innerHTML = `
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            `;
+            document.getElementById('progress-icon-2').className = 'w-10 h-10 rounded-full bg-green-100 flex items-center justify-center';
+            document.getElementById('progress-icon-3').innerHTML = `
+                <svg class="w-5 h-5 text-indigo-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+            `;
+            document.getElementById('progress-icon-3').className = 'w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center';
+
+            await delay(1000);
+
+            const confidence = Math.floor(85 + Math.random() * 11); // 85-95
+            updatePageStatus(currentPage.id, 'found', confidence, newUrl);
+
+            // Generate LLM analysis
+            const llmAnalyses = {
+                about: "This About page contains comprehensive information about the business, including company history, mission statement, and team details. The page structure is well-organized with clear sections and professional imagery. All accessibility standards are met.",
+                products: "The Products page successfully displays the full catalog with proper categorization, pricing information, and product descriptions. E-commerce functionality is properly implemented with secure checkout integration.",
+                pricing: "The Pricing page clearly presents all pricing tiers and subscription options. Payment processing integration is verified and functional. Terms and conditions are properly linked and accessible.",
+                contact: "The Contact page provides multiple communication channels including email, phone, and a functional contact form. Business location and hours are clearly displayed. Form validation and security measures are in place."
+            };
+
+            // Populate PDF report
+            document.getElementById('pdf-page-title').textContent = currentPage.label + ' - Analysis Report';
+            document.getElementById('pdf-page-url').textContent = newUrl;
+            document.getElementById('pdf-doc-page-name').textContent = 'Page: ' + currentPage.label;
+            document.getElementById('pdf-doc-date').querySelector('.font-medium').textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('pdf-llm-analysis').textContent = llmAnalyses[currentPage.id] || "This page has been successfully verified and meets all requirements for payment method activation. The page structure, content, and accessibility have been validated.";
+            document.getElementById('pdf-confidence').textContent = confidence + '%';
+
+            // Show mock screenshot
+            document.getElementById('pdf-screenshot').innerHTML = `
+                <div class="w-full h-full bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center relative overflow-hidden">
+                    <div class="absolute inset-0 opacity-10">
+                        <div class="absolute top-4 left-4 right-4 h-16 bg-indigo-600 rounded"></div>
+                        <div class="absolute top-24 left-4 right-1/2 space-y-2">
+                            <div class="h-3 bg-gray-400 rounded"></div>
+                            <div class="h-3 bg-gray-400 rounded w-3/4"></div>
+                            <div class="h-3 bg-gray-400 rounded w-5/6"></div>
+                        </div>
+                        <div class="absolute top-24 right-4 w-1/3 h-32 bg-blue-400 rounded"></div>
+                    </div>
+                    <div class="relative z-10 text-center">
+                        <svg class="w-16 h-16 mx-auto text-indigo-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <p class="text-sm text-gray-600 font-medium">${currentPage.label} Page</p>
+                        <p class="text-xs text-gray-500">Screenshot captured</p>
+                    </div>
+                </div>
+            `;
+
+            // Hide progress, show PDF
+            hideElement('scraping-progress');
+            showElement('scraping-success');
+
+            scrapingResults.completed.push(currentPage);
+            updateOverallProgress();
+
+            // Auto-advance
+            await delay(3000);
+            scrapingResults.currentIndex++;
+            processNextPage();
+        }
+
+        function openBrowseMode() {
+            const currentPage = scrapingResults.pending[scrapingResults.currentIndex];
+
+            // Show iframe in main panel
+            hideElement('scraping-success');
+            hideElement('scraping-failed');
+            hideElement('scraping-provide-url');
+            hideElement('scraping-login-form');
+            hideElement('scraping-page-detail');
+            showElement('scraping-iframe');
+
+            // Load mock page in iframe
+            loadMockPageInIframe('manual-iframe', currentPage.label);
+            showToast('Navigate to the page and click "Capture This Page"');
+        }
+
+        async function captureCurrentPage() {
+            console.log('captureCurrentPage called');
+
+            // Get iframe current URL
+            const iframe = document.getElementById('manual-iframe');
+            let capturedUrl = '';
+            try {
+                capturedUrl = iframe.contentWindow.location.href;
+            } catch (e) {
+                // If can't access iframe URL (cross-origin), use the stored app URL
+                capturedUrl = scrapingResults.loginCredentials?.appUrl || merchantWebsiteUrl;
+            }
+
+            // First check if we're in a failed page scenario (from browse mode)
+            const currentPage = scrapingResults.pending[scrapingResults.currentIndex];
+            const failedPage = scrapingResults.failed.find(p => p.id === currentPage?.id);
+
+            if (failedPage) {
+                // This is a failed public page being manually captured
+                console.log('Capturing failed public page:', failedPage.label);
+
+                // Hide iframe and show progress animation
+                hideElement('scraping-iframe');
+                showElement('scraping-progress');
+
+                // Update left panel to show capturing
+                updatePageStatus(failedPage.id, 'searching');
+
+                // Step 1: Reading page
+                document.getElementById('progress-title').textContent = 'Reading your page';
+                document.getElementById('progress-description').textContent = 'Capturing page structure and content';
+                document.getElementById('scraping-progress-bar').style.width = '33%';
+                document.getElementById('progress-icon-1').innerHTML = `
+                    <svg class="w-5 h-5 text-indigo-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                `;
+                document.getElementById('progress-icon-1').className = 'w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center';
+
+                await delay(1200);
+
+                // Step 2: AI Analysis
+                document.getElementById('progress-title').textContent = 'AI Analysis in progress';
+                document.getElementById('progress-description').textContent = 'Validating page content and structure';
+                document.getElementById('scraping-progress-bar').style.width = '66%';
+                document.getElementById('progress-icon-1').innerHTML = `
+                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                `;
+                document.getElementById('progress-icon-1').className = 'w-10 h-10 rounded-full bg-green-100 flex items-center justify-center';
+                document.getElementById('progress-icon-2').innerHTML = `
+                    <svg class="w-5 h-5 text-indigo-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                    </svg>
+                `;
+                document.getElementById('progress-icon-2').className = 'w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center';
+
+                await delay(1200);
+
+                // Step 3: Generating Report
+                document.getElementById('progress-title').textContent = 'Generating report';
+                document.getElementById('progress-description').textContent = 'Creating verification document';
+                document.getElementById('scraping-progress-bar').style.width = '100%';
+                document.getElementById('progress-icon-2').innerHTML = `
+                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                `;
+                document.getElementById('progress-icon-2').className = 'w-10 h-10 rounded-full bg-green-100 flex items-center justify-center';
+                document.getElementById('progress-icon-3').innerHTML = `
+                    <svg class="w-5 h-5 text-indigo-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                `;
+                document.getElementById('progress-icon-3').className = 'w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center';
+
+                await delay(1000);
+
+                // Success! Update page status
+                const confidence = Math.floor(75 + Math.random() * 21); // 75-95
+                updatePageStatus(failedPage.id, 'found', confidence, capturedUrl);
+
+                // Generate LLM analysis
+                const llmAnalyses = {
+                    about: "This About page contains comprehensive information about the business, including company history, mission statement, and team details. The page structure is well-organized with clear sections and professional imagery. All accessibility standards are met.",
+                    products: "The Products page successfully displays the full catalog with proper categorization, pricing information, and product descriptions. E-commerce functionality is properly implemented with secure checkout integration.",
+                    pricing: "The Pricing page clearly presents all pricing tiers and subscription options. Payment processing integration is verified and functional. Terms and conditions are properly linked and accessible.",
+                    contact: "The Contact page provides multiple communication channels including email, phone, and a functional contact form. Business location and hours are clearly displayed. Form validation and security measures are in place."
+                };
+
+                // Populate PDF report
+                document.getElementById('pdf-page-title').textContent = failedPage.label + ' - Analysis Report';
+                document.getElementById('pdf-page-url').textContent = capturedUrl;
+                document.getElementById('pdf-doc-page-name').textContent = 'Page: ' + failedPage.label;
+                document.getElementById('pdf-doc-date').querySelector('.font-medium').textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                document.getElementById('pdf-llm-analysis').textContent = llmAnalyses[failedPage.id] || "This page has been successfully verified and meets all requirements for payment method activation. The page structure, content, and accessibility have been validated.";
+                document.getElementById('pdf-confidence').textContent = confidence + '%';
+
+                // Show mock screenshot
+                document.getElementById('pdf-screenshot').innerHTML = `
+                    <div class="w-full h-full bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center relative overflow-hidden">
+                        <div class="absolute inset-0 opacity-10">
+                            <div class="absolute top-4 left-4 right-4 h-16 bg-indigo-600 rounded"></div>
+                            <div class="absolute top-24 left-4 right-1/2 space-y-2">
+                                <div class="h-3 bg-gray-400 rounded"></div>
+                                <div class="h-3 bg-gray-400 rounded w-3/4"></div>
+                                <div class="h-3 bg-gray-400 rounded w-5/6"></div>
+                            </div>
+                            <div class="absolute top-24 right-4 w-1/3 h-32 bg-blue-400 rounded"></div>
+                        </div>
+                        <div class="relative z-10 text-center">
+                            <svg class="w-16 h-16 mx-auto text-indigo-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <p class="text-sm text-gray-600 font-medium">${failedPage.label} Page</p>
+                            <p class="text-xs text-gray-500">Screenshot captured</p>
+                        </div>
+                    </div>
+                `;
+
+                // Hide progress, show PDF
+                hideElement('scraping-progress');
+                showElement('scraping-success');
+
+                // Move from failed to completed
+                scrapingResults.failed = scrapingResults.failed.filter(p => p.id !== failedPage.id);
+                scrapingResults.completed.push(failedPage);
+                updateOverallProgress();
+
+                showToast('Page captured successfully!');
+
+                // Auto-advance after viewing PDF
+                await delay(3000);
+                scrapingResults.currentIndex++;
+                processNextPage();
+                return;
+            }
+
+            // Check if we're in post-login capture mode
+            if (scrapingResults.loginCredentialsProvided) {
+                // This is a dynamic post-login capture
+                scrapingResults.postLoginCaptureCount++;
+                const captureNumber = scrapingResults.postLoginCaptureCount;
+                console.log('Capturing post-login screen #' + captureNumber);
+
+                // Hide iframe and show progress animation
+                hideElement('scraping-iframe');
+                showElement('scraping-progress');
+
+                    // Step 1: Reading page
+                    document.getElementById('progress-title').textContent = 'Reading your page';
+                    document.getElementById('progress-description').textContent = 'Capturing page structure and content';
+                    document.getElementById('scraping-progress-bar').style.width = '33%';
+                    document.getElementById('progress-icon-1').innerHTML = `
+                        <svg class="w-5 h-5 text-indigo-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
+                    `;
+                    document.getElementById('progress-icon-1').className = 'w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center';
+
+                    await delay(1200);
+
+                    // Step 2: AI Analysis
+                    document.getElementById('progress-title').textContent = 'AI Analysis in progress';
+                    document.getElementById('progress-description').textContent = 'Validating page content and structure';
+                    document.getElementById('scraping-progress-bar').style.width = '66%';
+                    document.getElementById('progress-icon-1').innerHTML = `
+                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    `;
+                    document.getElementById('progress-icon-1').className = 'w-10 h-10 rounded-full bg-green-100 flex items-center justify-center';
+                    document.getElementById('progress-icon-2').innerHTML = `
+                        <svg class="w-5 h-5 text-indigo-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                    `;
+                    document.getElementById('progress-icon-2').className = 'w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center';
+
+                    await delay(1200);
+
+                    // Step 3: Generating Report
+                    document.getElementById('progress-title').textContent = 'Generating report';
+                    document.getElementById('progress-description').textContent = 'Creating verification document';
+                    document.getElementById('scraping-progress-bar').style.width = '100%';
+                    document.getElementById('progress-icon-2').innerHTML = `
+                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    `;
+                    document.getElementById('progress-icon-2').className = 'w-10 h-10 rounded-full bg-green-100 flex items-center justify-center';
+                    document.getElementById('progress-icon-3').innerHTML = `
+                        <svg class="w-5 h-5 text-indigo-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    `;
+                    document.getElementById('progress-icon-3').className = 'w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center';
+
+                await delay(1000);
+
+                // Create capture object
+                const capture = {
+                    id: 'postlogin-' + captureNumber,
+                    label: 'Screen ' + captureNumber,
+                    url: capturedUrl,
+                    timestamp: new Date().toISOString(),
+                    analysis: "This authenticated page has been successfully captured and verified. The page structure, functionality, and user experience have been validated for payment method activation."
+                };
+
+                // Store the capture
+                scrapingResults.postLoginCaptures.push(capture);
+
+                // Populate PDF report
+                document.getElementById('pdf-page-title').textContent = 'Screen ' + captureNumber + ' - Analysis Report';
+                document.getElementById('pdf-page-url').textContent = capturedUrl;
+                document.getElementById('pdf-doc-page-name').textContent = 'Post-Login Screen ' + captureNumber;
+                document.getElementById('pdf-doc-date').querySelector('.font-medium').textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                document.getElementById('pdf-llm-analysis').textContent = capture.analysis;
+                document.getElementById('pdf-confidence').textContent = '100%';
+
+                // Show mock screenshot
+                document.getElementById('pdf-screenshot').innerHTML = `
+                    <div class="w-full h-full bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center relative overflow-hidden">
+                        <div class="absolute inset-0 opacity-10">
+                            <div class="absolute top-4 left-4 right-4 h-16 bg-indigo-600 rounded"></div>
+                            <div class="absolute top-24 left-4 right-1/2 space-y-2">
+                                <div class="h-3 bg-gray-400 rounded"></div>
+                                <div class="h-3 bg-gray-400 rounded w-3/4"></div>
+                                <div class="h-3 bg-gray-400 rounded w-5/6"></div>
+                            </div>
+                            <div class="absolute top-24 right-4 w-1/3 h-32 bg-blue-400 rounded"></div>
+                        </div>
+                        <div class="relative z-10 text-center">
+                            <svg class="w-16 h-16 mx-auto text-indigo-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <p class="text-sm text-gray-600 font-medium">Screen ${captureNumber}</p>
+                            <p class="text-xs text-gray-500">Post-login capture</p>
+                        </div>
+                    </div>
+                `;
+
+                // Hide progress, show PDF
+                hideElement('scraping-progress');
+                showElement('scraping-success');
+
+                // Add to left panel list
+                addPostLoginCaptureToList(capture);
+
+                // Update count
+                document.getElementById('post-login-count').textContent = captureNumber + ' captured';
+
+                // Show "Done Capturing" button after first capture
+                if (captureNumber >= 1) {
+                    showElement('done-capturing-btn');
+                }
+
+                // Show success toast
+                showToast(`Captured Screen ${captureNumber}!`);
+
+                // After viewing PDF, auto-return to iframe for next capture after 3 seconds
+                await delay(3000);
+                hideElement('scraping-success');
+                showElement('scraping-iframe');
+                showToast('Navigate to next page and click "Capture This Page"');
+            }
+        }
+
+        function addPostLoginCaptureToList(capture) {
+            const list = document.getElementById('login-pages-list');
+
+            const card = document.createElement('div');
+            card.id = `capture-card-${capture.id}`;
+            card.className = 'bg-white border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition-colors cursor-pointer';
+            card.onclick = () => viewPostLoginCapture(capture.id);
+
+            card.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                    <div class="flex-1">
+                        <div class="font-medium text-sm text-gray-900">${capture.label}</div>
+                        <div class="text-xs text-gray-500">Captured</div>
+                    </div>
+                </div>
+            `;
+
+            list.appendChild(card);
+        }
+
+        function viewPostLoginCapture(captureId) {
+            const capture = scrapingResults.postLoginCaptures.find(c => c.id === captureId);
+            if (!capture) return;
+
+            // Hide all other states
+            hideElement('scraping-initial-state');
+            hideElement('scraping-failed');
+            hideElement('scraping-iframe');
+            hideElement('scraping-provide-url');
+            hideElement('scraping-login-form');
+            hideElement('scraping-public-complete');
+            hideElement('scraping-progress');
+
+            // Populate and show PDF report
+            document.getElementById('pdf-page-title').textContent = capture.label + ' - Analysis Report';
+            document.getElementById('pdf-page-url').textContent = capture.url;
+            document.getElementById('pdf-doc-page-name').textContent = 'Post-Login ' + capture.label;
+            document.getElementById('pdf-doc-date').querySelector('.font-medium').textContent = new Date(capture.timestamp).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('pdf-llm-analysis').textContent = capture.analysis;
+            document.getElementById('pdf-confidence').textContent = '100%';
+
+            // Show mock screenshot
+            const captureNumber = capture.label.replace('Screen ', '');
+            document.getElementById('pdf-screenshot').innerHTML = `
+                <div class="w-full h-full bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center relative overflow-hidden">
+                    <div class="absolute inset-0 opacity-10">
+                        <div class="absolute top-4 left-4 right-4 h-16 bg-indigo-600 rounded"></div>
+                        <div class="absolute top-24 left-4 right-1/2 space-y-2">
+                            <div class="h-3 bg-gray-400 rounded"></div>
+                            <div class="h-3 bg-gray-400 rounded w-3/4"></div>
+                            <div class="h-3 bg-gray-400 rounded w-5/6"></div>
+                        </div>
+                        <div class="absolute top-24 right-4 w-1/3 h-32 bg-blue-400 rounded"></div>
+                    </div>
+                    <div class="relative z-10 text-center">
+                        <svg class="w-16 h-16 mx-auto text-indigo-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <p class="text-sm text-gray-600 font-medium">${capture.label}</p>
+                        <p class="text-xs text-gray-500">Post-login capture</p>
+                    </div>
+                </div>
+            `;
+
+            showElement('scraping-success');
+        }
+
+        function finishPostLoginCapture() {
+            if (scrapingResults.postLoginCaptureCount === 0) {
+                showToast('Please capture at least one screen before finishing');
+                return;
+            }
+
+            // Hide iframe
+            hideElement('scraping-iframe');
+
+            // Collapse post-login section
+            collapsePostLoginSection();
+
+            // Show KYC section
+            showElement('kyc-section');
+            initializeKycDocuments();
+
+            showToast('Post-login journey complete! Please upload KYC documents.');
+        }
+
+        function generateCombinedReport() {
+            // Hide all other states
+            hideElement('scraping-initial-state');
+            hideElement('scraping-failed');
+            hideElement('scraping-provide-url');
+            hideElement('scraping-login-form');
+            hideElement('scraping-progress');
+            hideElement('scraping-success');
+            hideElement('scraping-public-complete');
+            hideElement('scraping-iframe');
+
+            // Show combined report
+            showElement('combined-pdf-report');
+
+            // Hide default button, show report review actions
+            hideElement('complete-btn');
+            showElement('report-review-actions');
+
+            // Populate report header
+            document.getElementById('report-date').textContent = 'Generated on ' + new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            document.getElementById('report-website').textContent = 'Website: ' + merchantWebsiteUrl;
+            document.getElementById('report-timestamp').textContent = Date.now();
+
+            // Hide KYC upload screen
+            hideElement('kyc-upload-screen');
+
+            // Populate summary
+            const publicPagesCompleted = scrapingResults.pages.filter(p => p.section === 'public' && p.status === 'found');
+            document.getElementById('summary-public-count').textContent = publicPagesCompleted.length;
+            document.getElementById('summary-postlogin-count').textContent = scrapingResults.postLoginCaptureCount;
+            document.getElementById('summary-kyc-count').textContent = scrapingResults.kycDocuments.filter(d => d.status === 'verified').length;
+
+            // Populate public pages section
+            const publicPagesContainer = document.getElementById('report-public-pages');
+            publicPagesContainer.innerHTML = '';
+
+            publicPagesCompleted.forEach((page, index) => {
+                const pageBlock = document.createElement('div');
+                pageBlock.className = 'border border-gray-200 rounded-lg overflow-hidden';
+                pageBlock.innerHTML = `
+                    <div class="bg-gray-50 px-6 py-3 border-b border-gray-200">
+                        <h3 class="font-semibold text-gray-900">${index + 1}. ${page.label}</h3>
+                        <p class="text-sm text-gray-600 mt-1">${page.url}</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-lg h-48 flex items-center justify-center mb-4">
+                            <div class="text-center">
+                                <svg class="w-12 h-12 mx-auto text-indigo-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                <p class="text-sm text-gray-600 font-medium">${page.label} Screenshot</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4 mb-3">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-medium text-gray-700">Status:</span>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                    Verified
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-medium text-gray-700">Confidence:</span>
+                                <span class="text-sm font-bold text-green-600">${page.confidence}%</span>
+                            </div>
+                        </div>
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <h4 class="text-sm font-semibold text-blue-900 mb-2">AI Analysis</h4>
+                            <p class="text-sm text-blue-800">${getAnalysisForPage(page.id)}</p>
+                        </div>
+                    </div>
+                `;
+                publicPagesContainer.appendChild(pageBlock);
+            });
+
+            // Populate post-login pages section
+            const postLoginContainer = document.getElementById('report-postlogin-pages');
+            postLoginContainer.innerHTML = '';
+
+            scrapingResults.postLoginCaptures.forEach((capture, index) => {
+                const captureBlock = document.createElement('div');
+                captureBlock.className = 'border border-gray-200 rounded-lg overflow-hidden';
+                captureBlock.innerHTML = `
+                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-3 border-b border-gray-200">
+                        <h3 class="font-semibold text-gray-900">${index + 1}. ${capture.label}</h3>
+                        <p class="text-sm text-gray-600 mt-1">${capture.url}</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-lg h-64 flex items-center justify-center mb-4 border-2 border-indigo-100">
+                            <div class="text-center">
+                                <svg class="w-16 h-16 mx-auto text-indigo-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                                </svg>
+                                <p class="text-sm text-gray-600 font-medium">${capture.label}</p>
+                                <p class="text-xs text-gray-500 mt-1">Post-login authenticated page</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-sm font-medium text-green-600">Successfully Captured</span>
+                            <span class="text-xs text-gray-500 ml-2">${new Date(capture.timestamp).toLocaleString()}</span>
+                        </div>
+                        <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                            <h4 class="text-sm font-semibold text-indigo-900 mb-2">AI Analysis</h4>
+                            <p class="text-sm text-indigo-800">${capture.analysis}</p>
+                        </div>
+                    </div>
+                `;
+                postLoginContainer.appendChild(captureBlock);
+            });
+
+            // Populate KYC documents section
+            const kycContainer = document.getElementById('report-kyc-documents');
+            kycContainer.innerHTML = '';
+
+            scrapingResults.kycDocuments.forEach((doc, index) => {
+                const docBlock = document.createElement('div');
+                docBlock.className = 'border border-gray-200 rounded-lg overflow-hidden';
+                docBlock.innerHTML = `
+                    <div class="bg-gradient-to-r from-purple-50 to-pink-50 px-6 py-3 border-b border-gray-200">
+                        <h3 class="font-semibold text-gray-900">${index + 1}. ${doc.label}</h3>
+                        <p class="text-sm text-gray-600 mt-1">${doc.fileName || 'Document'}</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="bg-gradient-to-br from-purple-50 via-pink-50 to-red-50 rounded-lg h-48 flex items-center justify-center mb-4 border-2 border-purple-100">
+                            <div class="text-center">
+                                <svg class="w-16 h-16 mx-auto text-purple-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <p class="text-sm text-gray-600 font-medium">${doc.label}</p>
+                                <p class="text-xs text-gray-500 mt-1">Document uploaded</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4 mb-3">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-medium text-gray-700">Status:</span>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                    Verified
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-medium text-gray-700">Confidence:</span>
+                                <span class="text-sm font-bold text-green-600">${doc.confidence}%</span>
+                            </div>
+                        </div>
+                        <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                            <h4 class="text-sm font-semibold text-purple-900 mb-2">AI Verification</h4>
+                            <p class="text-sm text-purple-800">${getKycAnalysis(doc.id)}</p>
+                        </div>
+                    </div>
+                `;
+                kycContainer.appendChild(docBlock);
+            });
+
+            showToast('Report generated successfully! Please review.');
+        }
+
+        function getKycAnalysis(docId) {
+            const analyses = {
+                pan: "PAN Card has been successfully verified. The document is authentic, clearly legible, and all details match the business information provided. Document expiry status is valid.",
+                gst: "GST Certificate verified successfully. The GSTIN is active and matches the registered business name and address. All mandatory fields are present and validated.",
+                bank: "Bank Statement verified. The document shows consistent transaction history, valid account details, and matches the business name. Account is active and in good standing.",
+                business: "Business Registration certificate verified. The company is legally registered, all incorporation details are validated, and the document is issued by the appropriate authority."
+            };
+            return analyses[docId] || "This document has been successfully verified using AI-powered document analysis. All required information is present and validated.";
+        }
+
+        function getAnalysisForPage(pageId) {
+            const analyses = {
+                about: "This About page contains comprehensive information about the business, including company history, mission statement, and team details. The page structure is well-organized with clear sections and professional imagery. All accessibility standards are met.",
+                products: "The Products page successfully displays the full catalog with proper categorization, pricing information, and product descriptions. E-commerce functionality is properly implemented with secure checkout integration.",
+                pricing: "The Pricing page clearly presents all pricing tiers and subscription options. Payment processing integration is verified and functional. Terms and conditions are properly linked and accessible.",
+                contact: "The Contact page provides multiple communication channels including email, phone, and a functional contact form. Business location and hours are clearly displayed. Form validation and security measures are in place."
+            };
+            return analyses[pageId] || "This page has been successfully verified and meets all requirements for payment method activation.";
+        }
+
+        function getKycAnalysisText(docId) {
+            const analyses = {
+                pan: "PAN card document verified successfully. All details are clearly visible and match the business registration information. Document appears authentic with proper formatting and security features. No discrepancies found.",
+                gst: "GST certificate validated successfully. Registration number and business details are clearly legible. Document is current and matches the business information provided. All required fields are properly filled.",
+                bank: "Bank statement verified successfully. Document shows consistent transaction history and healthy account balance. Statement is recent (within 90 days) and contains all necessary bank authentication marks. Account details match business registration.",
+                business: "Business registration certificate verified successfully. Company name, registration number, and incorporation date are all clearly visible. Document appears authentic with proper government seals and signatures. All information is consistent with other provided documents."
+            };
+            return analyses[docId] || "Document verified successfully. All information is clearly visible and appears authentic.";
+        }
+
+        function downloadCombinedReport() {
+            showToast('Downloading report as PDF...');
+            // In a real implementation, this would generate and download an actual PDF
+            setTimeout(() => {
+                showToast('Report downloaded successfully!');
+            }, 1500);
+        }
+
+        function approveCombinedReport() {
+            showToast('Report approved! Completing verification...');
+
+            // Hide report actions, show complete button
+            hideElement('report-review-actions');
+            showElement('complete-btn');
+
+            // Enable complete button
+            const completeBtn = document.getElementById('complete-btn');
+            completeBtn.disabled = false;
+            completeBtn.textContent = 'Complete & Continue →';
+
+            // Show completion message after a short delay
+            setTimeout(() => {
+                hideElement('combined-pdf-report');
+                showElement('scraping-public-complete');
+
+                // Update completion message
+                document.getElementById('public-complete-title').textContent = 'Website Verification Complete!';
+                document.getElementById('public-complete-message').textContent = `Successfully verified ${scrapingResults.pages.filter(p => p.status === 'found').length + scrapingResults.postLoginCaptureCount} pages.`;
+                document.getElementById('public-complete-next-step').innerHTML = `
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
+                        <div class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div class="text-left">
+                                <p class="text-sm font-medium text-green-900 mb-1">Verification Approved</p>
+                                <p class="text-sm text-green-700">Your website has been verified and approved for payment method activation. Click "Complete & Continue" to proceed.</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }, 1000);
+        }
+
+        // ===== KYC FUNCTIONS =====
+        function initializeKycDocuments() {
+            // Initialize KYC documents if not already done
+            if (scrapingResults.kycDocuments.length === 0) {
+                scrapingResults.kycDocuments = kycDocumentTypes.map(doc => ({
+                    ...doc,
+                    status: 'pending', // pending, uploaded, verifying, verified, failed
+                    confidence: 0,
+                    file: null,
+                    fileName: null
+                }));
+            }
+
+            // Just update the list - don't show full screen upload
+            // KYC documents are already visible in left panel
+            renderKycDocumentsList();
+
+            // Show initial state in right panel
+            hideElement('scraping-iframe');
+            hideElement('scraping-success');
+            hideElement('scraping-progress');
+            hideElement('scraping-failed');
+            hideElement('scraping-provide-url');
+            hideElement('scraping-login-form');
+            hideElement('scraping-public-complete');
+            hideElement('kyc-upload-screen');
+            hideElement('combined-pdf-report');
+            showElement('scraping-initial-state');
+
+            // Update initial state message to guide user
+            const initialState = document.getElementById('scraping-initial-state');
+            initialState.innerHTML = `
+                <div class="text-center p-8">
+                    <div class="mb-6">
+                        <svg class="w-20 h-20 mx-auto text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Upload KYC Documents</h3>
+                    <p class="text-gray-600 mb-4">Click on any document in the left panel to start uploading</p>
+                    <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 inline-block">
+                        <p class="text-sm text-purple-800">
+                            <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                            </svg>
+                            Upload documents one at a time for verification
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderKycUploadCards() {
+            const container = document.getElementById('kyc-documents-upload-container');
+            container.innerHTML = '';
+
+            scrapingResults.kycDocuments.forEach(doc => {
+                const card = document.createElement('div');
+                card.id = `kyc-upload-${doc.id}`;
+                card.className = 'bg-white border-2 border-gray-200 rounded-lg p-6 hover:border-purple-300 transition-colors';
+
+                card.innerHTML = `
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-900">${doc.label}</h4>
+                            <p class="text-sm text-gray-500 mt-1">${doc.required ? 'Required' : 'Optional'}</p>
+                        </div>
+                        <div id="kyc-status-badge-${doc.id}">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                                Pending
+                            </span>
+                        </div>
+                    </div>
+
+                    <div id="kyc-upload-area-${doc.id}" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-purple-400 transition-colors cursor-pointer">
+                        <input type="file" id="kyc-file-input-${doc.id}" class="hidden" accept=".pdf,.jpg,.jpeg,.png" onchange="handleKycFileUpload('${doc.id}', this)">
+                        <svg class="w-12 h-12 mx-auto text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                        <p class="text-sm font-medium text-gray-700 mb-1">Click to upload or drag and drop</p>
+                        <p class="text-xs text-gray-500">PDF, PNG, JPG up to 10MB</p>
+                    </div>
+
+                    <div id="kyc-file-preview-${doc.id}" class="hidden mt-4">
+                        <div class="flex items-center justify-between bg-purple-50 border border-purple-200 rounded-lg p-4">
+                            <div class="flex items-center gap-3">
+                                <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900" id="kyc-filename-${doc.id}">Document.pdf</p>
+                                    <p class="text-xs text-gray-500">Ready to verify</p>
+                                </div>
+                            </div>
+                            <button onclick="removeKycFile('${doc.id}')" class="text-red-600 hover:text-red-700">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                // Add click handler to upload area
+                const uploadArea = card.querySelector(`#kyc-upload-area-${doc.id}`);
+                uploadArea.onclick = () => document.getElementById(`kyc-file-input-${doc.id}`).click();
+
+                container.appendChild(card);
+            });
+        }
+
+        function handleKycFileUpload(docId, input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const doc = scrapingResults.kycDocuments.find(d => d.id === docId);
+
+                if (!doc) return;
+
+                // Update document
+                doc.status = 'uploaded';
+                doc.file = file;
+                doc.fileName = file.name;
+
+                // Update UI
+                hideElement(`kyc-upload-area-${docId}`);
+                showElement(`kyc-file-preview-${docId}`);
+                document.getElementById(`kyc-filename-${docId}`).textContent = file.name;
+
+                // Update status badge
+                document.getElementById(`kyc-status-badge-${docId}`).innerHTML = `
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        Uploaded
+                    </span>
+                `;
+
+                // Update left panel
+                updateKycDocumentStatus(docId, 'uploaded');
+                updateKycCount();
+
+                // Enable verify button if all required documents are uploaded
+                checkKycReadyToVerify();
+
+                showToast(`${doc.label} uploaded successfully`);
+            }
+        }
+
+        function removeKycFile(docId) {
+            const doc = scrapingResults.kycDocuments.find(d => d.id === docId);
+            if (!doc) return;
+
+            // Reset document
+            doc.status = 'pending';
+            doc.file = null;
+            doc.fileName = null;
+
+            // Update UI
+            hideElement(`kyc-file-preview-${docId}`);
+            showElement(`kyc-upload-area-${docId}`);
+
+            // Update status badge
+            document.getElementById(`kyc-status-badge-${docId}`).innerHTML = `
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                    Pending
+                </span>
+            `;
+
+            // Update left panel
+            updateKycDocumentStatus(docId, 'pending');
+            updateKycCount();
+
+            // Disable verify button
+            document.getElementById('verify-kyc-btn').disabled = true;
+
+            showToast(`${doc.label} removed`);
+        }
+
+        function renderKycDocumentsList() {
+            const list = document.getElementById('kyc-documents-list');
+            list.innerHTML = '';
+
+            scrapingResults.kycDocuments.forEach(doc => {
+                const card = document.createElement('div');
+                card.id = `kyc-card-${doc.id}`;
+                card.className = 'bg-white border border-gray-200 rounded-lg p-3';
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div id="kyc-indicator-${doc.id}" class="w-3 h-3 rounded-full bg-gray-300"></div>
+                        <div class="flex-1">
+                            <div class="font-medium text-sm text-gray-900">${doc.label}</div>
+                            <div id="kyc-status-text-${doc.id}" class="text-xs text-gray-500">Pending upload</div>
+                        </div>
+                    </div>
+                `;
+
+                list.appendChild(card);
+            });
+        }
+
+        function updateKycDocumentStatus(docId, status) {
+            const indicator = document.getElementById(`kyc-indicator-${docId}`);
+            const statusText = document.getElementById(`kyc-status-text-${docId}`);
+
+            if (status === 'uploaded') {
+                indicator.className = 'w-3 h-3 rounded-full bg-blue-500';
+                statusText.textContent = 'Uploaded';
+            } else if (status === 'verifying') {
+                indicator.className = 'w-3 h-3 rounded-full bg-yellow-500 pulse';
+                statusText.textContent = 'Verifying...';
+            } else if (status === 'verified') {
+                indicator.className = 'w-3 h-3 rounded-full bg-green-500';
+                const doc = scrapingResults.kycDocuments.find(d => d.id === docId);
+                statusText.textContent = `Verified (${doc.confidence}%)`;
+            } else if (status === 'failed') {
+                indicator.className = 'w-3 h-3 rounded-full bg-red-500';
+                statusText.textContent = 'Verification failed';
+            } else {
+                indicator.className = 'w-3 h-3 rounded-full bg-gray-300';
+                statusText.textContent = 'Pending upload';
+            }
+        }
+
+        function updateKycCount() {
+            const uploaded = scrapingResults.kycDocuments.filter(d => d.status !== 'pending').length;
+            const total = scrapingResults.kycDocuments.length;
+            document.getElementById('kyc-count').textContent = `${uploaded}/${total}`;
+        }
+
+        function checkKycReadyToVerify() {
+            const allRequiredUploaded = scrapingResults.kycDocuments
+                .filter(d => d.required)
+                .every(d => d.status === 'uploaded' || d.status === 'verified');
+
+            document.getElementById('verify-kyc-btn').disabled = !allRequiredUploaded;
+        }
+
+        async function verifyAllKycDocuments() {
+            showToast('Verifying documents...');
+
+            for (const doc of scrapingResults.kycDocuments) {
+                if (doc.status === 'uploaded') {
+                    await verifyKycDocument(doc);
+                }
+            }
+
+            showToast('All documents verified!');
+
+            // Wait a moment then show combined report
+            await delay(1500);
+            generateCombinedReport();
+        }
+
+        async function verifyKycDocument(doc) {
+            doc.status = 'verifying';
+            updateKycDocumentStatus(doc.id, 'verifying');
+
+            // Simulate AI verification delay
+            await delay(1500);
+
+            // Simulate AI confidence score (high for demo)
+            doc.confidence = Math.floor(85 + Math.random() * 11); // 85-95%
+            doc.status = 'verified';
+
+            updateKycDocumentStatus(doc.id, 'verified');
+            scrapingResults.kycCompleted++;
+            updateKycCount();
+        }
+
+        // ===== IFRAME CONTROLS =====
+        function toggleIframeSize() {
+            const iframe = document.getElementById('scraping-iframe');
+            const leftPanel = iframe.closest('.flex').querySelector('.w-2\\/5');
+
+            if (leftPanel.classList.contains('hidden')) {
+                // Restore normal size
+                leftPanel.classList.remove('hidden');
+                showToast('Normal view restored');
+            } else {
+                // Maximize - hide left panel
+                leftPanel.classList.add('hidden');
+                showToast('Fullscreen mode');
+            }
+        }
+
+        function closeIframeModal() {
+            // This would close the entire modal in a real implementation
+            // For now, just show a toast
+            showToast('Press "Done Capturing" when you finish capturing all screens');
+        }
+
+
+        // ===== PAGE DETAIL VIEW FUNCTIONS =====
+        function viewPageDetail(pageId) {
+            const page = scrapingResults.pages.find(p => p.id === pageId);
+            if (!page) return;
+
+            // For completed pages, show the PDF report again
+            if (page.status === 'found' && page.section === 'public') {
+                // Hide all other states
+                hideElement('scraping-initial-state');
+                hideElement('scraping-failed');
+                hideElement('scraping-iframe');
+                hideElement('scraping-provide-url');
+                hideElement('scraping-login-form');
+                hideElement('scraping-public-complete');
+                hideElement('scraping-progress');
+                hideElement('scraping-page-detail');
+
+                // Repopulate and show PDF report
+                const llmAnalyses = {
+                    about: "This About page contains comprehensive information about the business, including company history, mission statement, and team details. The page structure is well-organized with clear sections and professional imagery. All accessibility standards are met.",
+                    products: "The Products page successfully displays the full catalog with proper categorization, pricing information, and product descriptions. E-commerce functionality is properly implemented with secure checkout integration.",
+                    pricing: "The Pricing page clearly presents all pricing tiers and subscription options. Payment processing integration is verified and functional. Terms and conditions are properly linked and accessible.",
+                    contact: "The Contact page provides multiple communication channels including email, phone, and a functional contact form. Business location and hours are clearly displayed. Form validation and security measures are in place."
+                };
+
+                document.getElementById('pdf-page-title').textContent = page.label + ' - Analysis Report';
+                document.getElementById('pdf-page-url').textContent = page.url;
+                document.getElementById('pdf-doc-page-name').textContent = 'Page: ' + page.label;
+                document.getElementById('pdf-doc-date').querySelector('.font-medium').textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                document.getElementById('pdf-llm-analysis').textContent = llmAnalyses[page.id] || "This page has been successfully verified and meets all requirements for payment method activation. The page structure, content, and accessibility have been validated.";
+                document.getElementById('pdf-confidence').textContent = page.confidence + '%';
+
+                // Show mock screenshot
+                document.getElementById('pdf-screenshot').innerHTML = `
+                    <div class="w-full h-full bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center relative overflow-hidden">
+                        <div class="absolute inset-0 opacity-10">
+                            <div class="absolute top-4 left-4 right-4 h-16 bg-indigo-600 rounded"></div>
+                            <div class="absolute top-24 left-4 right-1/2 space-y-2">
+                                <div class="h-3 bg-gray-400 rounded"></div>
+                                <div class="h-3 bg-gray-400 rounded w-3/4"></div>
+                                <div class="h-3 bg-gray-400 rounded w-5/6"></div>
+                            </div>
+                            <div class="absolute top-24 right-4 w-1/3 h-32 bg-blue-400 rounded"></div>
+                        </div>
+                        <div class="relative z-10 text-center">
+                            <svg class="w-16 h-16 mx-auto text-indigo-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <p class="text-sm text-gray-600 font-medium">${page.label} Page</p>
+                            <p class="text-xs text-gray-500">Screenshot captured</p>
+                        </div>
+                    </div>
+                `;
+
+                showElement('scraping-success');
+            } else {
+                // For pending or login pages, show appropriate message
+                showToast('Page not yet captured or report not available');
+            }
+
+            // Store current viewing page
+            scrapingResults.viewingPageId = pageId;
+        }
+
+        function toggleEditUrl() {
+            const input = document.getElementById('detail-page-url');
+            const editBtn = document.getElementById('detail-edit-btn');
+            const saveBtn = document.getElementById('detail-save-btn');
+            const hint = document.getElementById('detail-url-hint');
+
+            if (input.readOnly) {
+                // Enable editing
+                input.readOnly = false;
+                input.focus();
+                input.select();
+                editBtn.classList.add('hidden');
+                saveBtn.classList.remove('hidden');
+                hint.classList.remove('hidden');
+            } else {
+                // Disable editing
+                input.readOnly = true;
+                editBtn.classList.remove('hidden');
+                saveBtn.classList.add('hidden');
+                hint.classList.add('hidden');
+            }
+        }
+
+        function getBaseDomain(url) {
+            try {
+                const urlObj = new URL(url);
+                return `${urlObj.protocol}//${urlObj.hostname}`;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        async function saveAndRescrape() {
+            const newUrl = document.getElementById('detail-page-url').value.trim();
+
+            if (!newUrl || newUrl === 'Not available yet') {
+                showToast('Please enter a valid URL');
+                return;
+            }
+
+            // Validate that the base domain matches the merchant's domain
+            const merchantBaseDomain = getBaseDomain(merchantWebsiteUrl);
+            const newBaseDomain = getBaseDomain(newUrl);
+
+            if (!newBaseDomain) {
+                showToast('Please enter a valid URL');
+                return;
+            }
+
+            if (merchantBaseDomain !== newBaseDomain) {
+                showToast(`URL must be from the same domain: ${merchantBaseDomain}`);
+                return;
+            }
+
+            const pageId = scrapingResults.viewingPageId;
+            const page = scrapingResults.pages.find(p => p.id === pageId);
+            if (!page) return;
+
+            // Disable editing
+            document.getElementById('detail-page-url').readOnly = true;
+            document.getElementById('detail-edit-btn').classList.remove('hidden');
+            document.getElementById('detail-save-btn').classList.add('hidden');
+
+            // Show scraping in progress
+            showToast('Rescaping page...');
+            document.getElementById('detail-page-iframe').srcdoc = `
+                <div style="display: flex; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; color: #6366f1;">
+                    <div style="text-align: center;">
+                        <div style="width: 48px; height: 48px; margin: 0 auto 16px; border: 4px solid #e0e7ff; border-top-color: #6366f1; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                        <p style="font-size: 18px; font-weight: 600;">Scraping page...</p>
+                    </div>
+                </div>
+                <style>
+                    @keyframes spin {
+                        to { transform: rotate(360deg); }
+                    }
+                </style>
+            `;
+
+            // Simulate scraping delay
+            await delay(2000);
+
+            // Update page data
+            const confidence = Math.floor(85 + Math.random() * 11); // 85-95
+            page.url = newUrl;
+            page.confidence = confidence;
+            page.status = 'found';
+
+            // Update left panel
+            updatePageStatus(pageId, 'found', confidence, newUrl);
+            updateOverallProgress();
+
+            // Update detail view
+            document.getElementById('detail-confidence').textContent = confidence + '%';
+            document.getElementById('detail-confidence-bar').style.width = confidence + '%';
+            loadMockPageInIframe('detail-page-iframe', page.label);
+
+            // Color code the confidence bar
+            const confidenceBar = document.getElementById('detail-confidence-bar');
+            if (confidence >= 80) {
+                confidenceBar.style.backgroundColor = 'rgba(34, 197, 94, 0.9)';
+            } else if (confidence >= 60) {
+                confidenceBar.style.backgroundColor = 'rgba(234, 179, 8, 0.9)';
+            } else {
+                confidenceBar.style.backgroundColor = 'rgba(249, 115, 22, 0.9)';
+            }
+
+            showToast('Page successfully rescraped!');
+        }
+
+        // ===== LOGIN FUNCTIONS =====
+        function showLoginCredentialsForm() {
+            hideElement('scraping-initial-state');
+            hideElement('scraping-success');
+            hideElement('scraping-failed');
+            hideElement('scraping-iframe');
+            hideElement('scraping-provide-url');
+            showElement('scraping-login-form');
+        }
+
+        async function proceedWithLogin() {
+            const appUrl = document.getElementById('login-app-url').value;
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+
+            if (!appUrl || !username || !password) {
+                showToast('Please fill in all fields');
+                return;
+            }
+
+            // Store credentials
+            scrapingResults.loginCredentials = { appUrl, username, password };
+            scrapingResults.loginCredentialsProvided = true;
+
+            hideElement('scraping-login-form');
+
+            // Show iframe for manual navigation
+            showLoginNavigationIframe(appUrl);
+
+            // Update progress to reflect post-login journey started
+            updateOverallProgress();
+
+            // Show guidance message
+            await delay(1000);
+            showToast('Please log in using: ' + username);
+        }
+
+        function showLoginNavigationIframe(url) {
+            hideElement('scraping-initial-state');
+            hideElement('scraping-success');
+            hideElement('scraping-failed');
+            hideElement('scraping-provide-url');
+            hideElement('scraping-public-complete');
+            showElement('scraping-iframe');
+
+            // Show POST-LOGIN JOURNEY section in left panel
+            showElement('login-section');
+
+            // For demo purposes, load Amazon's account page to simulate e-commerce post-login navigation
+            // In production, this would be the merchant's actual app URL
+            const demoUrl = 'https://www.amazon.com/gp/css/homepage.html';
+            document.getElementById('manual-iframe').src = demoUrl;
+
+            // Update instruction text
+            document.getElementById('iframe-instruction-text').textContent = 'Navigate through your account pages (orders, payment methods, etc.)';
+
+            showToast('Navigate to different pages and capture screenshots');
+        }
+
+        // ===== COMPLETION =====
+        function handleCompleteButton() {
+            const completeBtn = document.getElementById('complete-btn');
+            const buttonText = completeBtn.textContent;
+
+            if (buttonText.includes('Post-Login Journey')) {
+                // Hide success message and show login credentials form
+                hideElement('scraping-public-complete');
+                showLoginCredentialsForm();
+            } else {
+                // Complete verification
+                completeVerification();
+            }
+        }
+
+        function completeVerification() {
+            showToast('Verification complete! Redirecting...');
+            setTimeout(() => {
+                alert('Verification complete! In a real application, this would proceed to the next step.');
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
