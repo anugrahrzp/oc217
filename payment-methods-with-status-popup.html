@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Methods - Razorpay Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .alert-banner {
+            background-color: #fef3e6;
+            border: 1px solid #f9d4a8;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .alert-icon {
+            color: #d97706;
+            font-size: 18px;
+        }
+
+        .alert-text {
+            font-size: 14px;
+            color: #92400e;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 16px;
+        }
+
+        .cards-container {
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .payment-method {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            background: #fff;
+        }
+
+        .payment-method:last-child {
+            margin-bottom: 0;
+        }
+
+        .payment-method.requested {
+            background: #fef9f3;
+            border-color: #f9d4a8;
+        }
+
+        .payment-method-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .payment-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 12px;
+            color: white;
+        }
+
+        .icon-visa { background: linear-gradient(135deg, #1434CB, #1A1F71); }
+        .icon-mastercard { background: linear-gradient(135deg, #EB001B, #F79E1B); }
+        .icon-rupay { background: linear-gradient(135deg, #097939, #86BC25); }
+        .icon-amex { background: linear-gradient(135deg, #006FCF, #00A3E0); }
+        .icon-diners { background: linear-gradient(135deg, #0079BE, #003A70); }
+
+        .payment-info {
+            flex: 1;
+        }
+
+        .payment-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .payment-status {
+            font-size: 13px;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-badge.activated {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-badge.requested {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .btn-activated {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: not-allowed;
+        }
+
+        .btn-view-status {
+            background: #528FF0;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-view-status:hover {
+            background: #3d7ad6;
+        }
+
+        .btn-request {
+            background: #528FF0;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-request:hover {
+            background: #3d7ad6;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            animation: fadeIn 0.2s;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-container {
+            background: white;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: slideUp 0.3s;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            padding: 24px;
+            border-bottom: 1px solid #e5e5e5;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title-section {
+            flex: 1;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .modal-subtitle {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #666;
+            cursor: pointer;
+            padding: 4px;
+            line-height: 1;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+
+        .modal-close:hover {
+            background: #f5f5f5;
+        }
+
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        /* Status Dashboard Styles (inside modal) */
+        .status-alert {
+            background: #fff3e0;
+            border: 1px solid #f9d4a8;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-alert-icon {
+            font-size: 18px;
+        }
+
+        .status-alert-content {
+            flex: 1;
+        }
+
+        .status-alert-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #92400e;
+            margin-bottom: 2px;
+        }
+
+        .status-alert-text {
+            font-size: 13px;
+            color: #92400e;
+        }
+
+        .status-overview {
+            background: #f9fafb;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .status-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .current-status {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            width: fit-content;
+        }
+
+        .status-in-progress {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .status-header span {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .eta-box {
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 12px 16px;
+            text-align: right;
+        }
+
+        .eta-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .eta-date {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 2px;
+        }
+
+        .eta-changed {
+            font-size: 12px;
+            color: #d97706;
+            font-weight: 500;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: #e5e5e5;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #528FF0, #3d7ad6);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .timeline {
+            margin-top: 24px;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 16px;
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .timeline-item:not(:last-child)::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 32px;
+            bottom: -24px;
+            width: 2px;
+            background: #e5e5e5;
+        }
+
+        .timeline-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 14px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .timeline-dot.completed {
+            background: #e8f5e9;
+            border: 2px solid #4caf50;
+            color: #2e7d32;
+        }
+
+        .timeline-dot.in-progress {
+            background: #e3f2fd;
+            border: 2px solid #528FF0;
+            color: #1565c0;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(82, 143, 240, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 0 8px rgba(82, 143, 240, 0);
+            }
+        }
+
+        .timeline-dot.pending {
+            background: #f5f5f5;
+            border: 2px solid #e5e5e5;
+            color: #999;
+        }
+
+        .timeline-content {
+            flex: 1;
+            padding-bottom: 8px;
+        }
+
+        .timeline-content.in-progress {
+            background: #f9fafb;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: -8px;
+        }
+
+        .timeline-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .timeline-date {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .timeline-description {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .timeline-assignee {
+            font-size: 13px;
+            color: #528FF0;
+            font-weight: 500;
+            margin-top: 8px;
+        }
+
+        .timeline-updates {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e5e5e5;
+        }
+
+        .update-item {
+            padding: 8px 12px;
+            background: white;
+            border-left: 3px solid #528FF0;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #1a1a1a;
+        }
+
+        .update-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-divider {
+            margin: 24px 0;
+            border: 0;
+            border-top: 1px solid #e5e5e5;
+        }
+
+        .eta-changes-section {
+            margin-top: 24px;
+        }
+
+        .section-subtitle {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 12px;
+        }
+
+        .eta-change-item {
+            background: #fff3e0;
+            border: 1px solid #f9d4a8;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+        }
+
+        .eta-change-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .eta-change-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .eta-change-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: #d97706;
+        }
+
+        .eta-change-date {
+            font-size: 12px;
+            color: #92400e;
+        }
+
+        .eta-change-reason {
+            font-size: 13px;
+            color: #92400e;
+            margin-top: 4px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #e5e5e5;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #666;
+            border: 1px solid #e5e5e5;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: #f5f5f5;
+        }
+
+        .btn-primary {
+            background: #528FF0;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #3d7ad6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">Payment Methods</h1>
+            <p class="page-subtitle">Visa, Master, Amex</p>
+        </div>
+
+        <div class="alert-banner">
+            <span class="alert-icon">⚠️</span>
+            <span class="alert-text">Request for Payment methods is unavailable as your account is not enabled to accept transactions.</span>
+        </div>
+
+        <div class="cards-container">
+            <h2 class="section-title">Domestic Cards</h2>
+
+            <!-- Visa - Activated -->
+            <div class="payment-method">
+                <div class="payment-method-left">
+                    <div class="payment-icon icon-visa">VISA</div>
+                    <div class="payment-info">
+                        <div class="payment-name">Visa Cards</div>
+                        <div class="payment-status">
+                            <span class="status-badge activated">✓ Activated</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-activated">✓ Activated</button>
+            </div>
+
+            <!-- MasterCard - Activated -->
+            <div class="payment-method">
+                <div class="payment-method-left">
+                    <div class="payment-icon icon-mastercard">MC</div>
+                    <div class="payment-info">
+                        <div class="payment-name">MasterCard</div>
+                        <div class="payment-status">
+                            <span class="status-badge activated">✓ Activated</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-activated">✓ Activated</button>
+            </div>
+
+            <!-- Rupay - Activated -->
+            <div class="payment-method">
+                <div class="payment-method-left">
+                    <div class="payment-icon icon-rupay">RUPAY</div>
+                    <div class="payment-info">
+                        <div class="payment-name">Rupay Cards</div>
+                        <div class="payment-status">
+                            <span class="status-badge activated">✓ Activated</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-activated">✓ Activated</button>
+            </div>
+
+            <!-- Amex - Requested (In Progress) -->
+            <div class="payment-method requested">
+                <div class="payment-method-left">
+                    <div class="payment-icon icon-amex">AMEX</div>
+                    <div class="payment-info">
+                        <div class="payment-name">Amex Cards</div>
+                        <div class="payment-status">
+                            <span class="status-badge requested">🔄 Requested</span>
+                            <span>• Bank Review</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-view-status" onclick="openStatusModal()">View Status</button>
+            </div>
+
+            <!-- Diners - Available to Request -->
+            <div class="payment-method">
+                <div class="payment-method-left">
+                    <div class="payment-icon icon-diners">DC</div>
+                    <div class="payment-info">
+                        <div class="payment-name">Diners Club</div>
+                        <div class="payment-status">
+                            <span style="color: #999;">Available on request</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-request">Request</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Modal -->
+    <div class="modal-overlay" id="statusModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div class="modal-title-section">
+                    <div class="modal-title">American Express Card Request Status</div>
+                    <div class="modal-subtitle">Request ID: MIR-2025-00123 • Submitted on Dec 2, 2025</div>
+                </div>
+                <button class="modal-close" onclick="closeStatusModal()">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Alert for ETA Change -->
+                <div class="status-alert">
+                    <span class="status-alert-icon">📅</span>
+                    <div class="status-alert-content">
+                        <div class="status-alert-title">Expected completion date updated</div>
+                        <div class="status-alert-text">Due to additional bank review requirements, the expected completion has been moved from Dec 23 to Dec 26, 2025 (+3 days)</div>
+                    </div>
+                </div>
+
+                <!-- Status Overview -->
+                <div class="status-overview">
+                    <div class="status-header">
+                        <div class="current-status">
+                            <div class="status-badge status-in-progress">🔄 In Progress</div>
+                            <span>Step 3 of 5 - Bank Approval</span>
+                        </div>
+                        <div class="eta-box">
+                            <div class="eta-label">Expected Completion</div>
+                            <div class="eta-date">Dec 26, 2025</div>
+                            <div class="eta-changed">Changed from Dec 23</div>
+                        </div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" style="width: 60%;"></div>
+                    </div>
+                </div>
+
+                <!-- Timeline -->
+                <div class="timeline">
+                    <!-- Step 1: Submitted -->
+                    <div class="timeline-item">
+                        <div class="timeline-dot completed">✓</div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">✅ Request Submitted</div>
+                            <div class="timeline-date">Dec 2, 2025 at 10:30 AM</div>
+                            <div class="timeline-description">Your American Express card request has been successfully submitted and is now being processed.</div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Internal Review -->
+                    <div class="timeline-item">
+                        <div class="timeline-dot completed">✓</div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">✅ Internal Review Completed</div>
+                            <div class="timeline-date">Dec 3, 2025 at 2:15 PM</div>
+                            <div class="timeline-description">Our team has reviewed your business details and verified all compliance requirements.</div>
+                            <div class="update-item">Dec 3, 11:00 AM: KYC documents verified</div>
+                            <div class="update-item">Dec 3, 1:30 PM: Business category (MCC 5812) confirmed as eligible</div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Bank Submission -->
+                    <div class="timeline-item">
+                        <div class="timeline-dot completed">✓</div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">✅ Submitted to American Express</div>
+                            <div class="timeline-date">Dec 4, 2025 at 11:00 AM</div>
+                            <div class="timeline-description">Your request has been forwarded to American Express for approval.</div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Bank Review (In Progress) -->
+                    <div class="timeline-item">
+                        <div class="timeline-dot in-progress">🔄</div>
+                        <div class="timeline-content in-progress">
+                            <div class="timeline-title">🔄 Bank Review In Progress</div>
+                            <div class="timeline-date">Started on Dec 5, 2025</div>
+                            <div class="timeline-description">American Express is currently reviewing your application. This typically takes 15-20 business days.</div>
+                            <div class="timeline-assignee">👤 Current owner: American Express Risk Team</div>
+                            <div class="timeline-updates">
+                                <div class="update-item"><strong>Dec 9, 4:30 PM:</strong> Bank requested additional review due to new merchant category guidelines</div>
+                                <div class="update-item"><strong>Dec 9, 4:35 PM:</strong> ETA updated from Dec 23 to Dec 26, 2025 (+3 days)</div>
+                                <div class="update-item"><strong>Dec 8, 10:00 AM:</strong> Bank acknowledged receipt and began compliance review</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 5: Terminal Provisioning -->
+                    <div class="timeline-item">
+                        <div class="timeline-dot pending">⏳</div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">⏳ Terminal Provisioning</div>
+                            <div class="timeline-description">Once approved, we'll configure your payment terminals to accept American Express cards.</div>
+                        </div>
+                    </div>
+
+                    <!-- Step 6: Activation -->
+                    <div class="timeline-item">
+                        <div class="timeline-dot pending">⏳</div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">⏳ Activation & Testing</div>
+                            <div class="timeline-description">Final activation and testing to ensure American Express cards work correctly on your account.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="section-divider">
+
+                <!-- ETA Changes Log -->
+                <div class="eta-changes-section">
+                    <div class="section-subtitle">📅 ETA Changes History</div>
+
+                    <div class="eta-change-item">
+                        <div class="eta-change-header">
+                            <span class="eta-change-text">📅 Dec 23 → Dec 26, 2025 (+3 days)</span>
+                            <span class="eta-change-date">Updated on Dec 9, 4:35 PM</span>
+                        </div>
+                        <div class="eta-change-reason">
+                            <strong>Reason:</strong> Bank requested additional review due to new merchant category guidelines. American Express requires extra validation for restaurant merchants (MCC 5812) processing high-value transactions.
+                        </div>
+                    </div>
+
+                    <div class="eta-change-item">
+                        <div class="eta-change-header">
+                            <span class="eta-change-text">📅 Dec 20 → Dec 23, 2025 (+3 days)</span>
+                            <span class="eta-change-date">Updated on Dec 6, 11:20 AM</span>
+                        </div>
+                        <div class="eta-change-reason">
+                            <strong>Reason:</strong> Bank review taking longer than expected due to year-end processing delays. American Express has increased review times during the holiday season.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeStatusModal()">Close</button>
+                <button class="btn-primary">Contact Support</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openStatusModal() {
+            document.getElementById('statusModal').classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+
+        function closeStatusModal() {
+            document.getElementById('statusModal').classList.remove('active');
+            document.body.style.overflow = ''; // Restore scrolling
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('statusModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeStatusModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeStatusModal();
+            }
+        });
+    </script>
+</body>
+</html>
