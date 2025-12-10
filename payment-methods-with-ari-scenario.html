@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Methods - Razorpay Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .alert-banner {
+            background-color: #fef3e6;
+            border: 1px solid #f9d4a8;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .alert-icon {
+            color: #d97706;
+            font-size: 18px;
+        }
+
+        .alert-text {
+            font-size: 14px;
+            color: #92400e;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 16px;
+        }
+
+        .cards-container {
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .payment-method {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            background: #fff;
+        }
+
+        .payment-method:last-child {
+            margin-bottom: 0;
+        }
+
+        .payment-method.requested {
+            background: #fef9f3;
+            border-color: #f9d4a8;
+        }
+
+        .payment-method-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .payment-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 12px;
+            color: white;
+        }
+
+        .icon-visa { background: linear-gradient(135deg, #1434CB, #1A1F71); }
+        .icon-mastercard { background: linear-gradient(135deg, #EB001B, #F79E1B); }
+        .icon-rupay { background: linear-gradient(135deg, #097939, #86BC25); }
+        .icon-amex { background: linear-gradient(135deg, #006FCF, #00A3E0); }
+        .icon-diners { background: linear-gradient(135deg, #0079BE, #003A70); }
+
+        .payment-info {
+            flex: 1;
+        }
+
+        .payment-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .payment-status {
+            font-size: 13px;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-badge.activated {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-badge.requested {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .btn-activated {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: not-allowed;
+        }
+
+        .btn-view-status {
+            background: #528FF0;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-view-status:hover {
+            background: #3d7ad6;
+        }
+
+        .btn-request {
+            background: #528FF0;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-request:hover {
+            background: #3d7ad6;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            animation: fadeIn 0.2s;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-container {
+            background: white;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: slideUp 0.3s;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            padding: 24px;
+            border-bottom: 1px solid #e5e5e5;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title-section {
+            flex: 1;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .modal-subtitle {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #666;
+            cursor: pointer;
+            padding: 4px;
+            line-height: 1;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+
+        .modal-close:hover {
+            background: #f5f5f5;
+        }
+
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        /* Status Dashboard Styles (inside modal) */
+        .status-alert {
+            background: #fef2f2;
+            border: 1px solid #fca5a5;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .status-alert-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .status-alert-icon {
+            font-size: 24px;
+        }
+
+        .status-alert-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #991b1b;
+        }
+
+        .status-alert-text {
+            font-size: 14px;
+            color: #991b1b;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .ari-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .ari-item {
+            background: white;
+            border: 1px solid #fca5a5;
+            border-radius: 6px;
+            padding: 12px;
+        }
+
+        .ari-item-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .ari-item-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #991b1b;
+        }
+
+        .ari-pending-badge {
+            background: #fef3e6;
+            color: #d97706;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .ari-item-description {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .ari-item-action {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .btn-upload {
+            background: #528FF0;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-upload:hover {
+            background: #3d7ad6;
+        }
+
+        .status-overview {
+            background: #f9fafb;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .status-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .current-status {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .status-badge-large {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            width: fit-content;
+        }
+
+        .status-on-hold {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .status-header span {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .eta-box {
+            background: white;
+            border: 1px solid #fca5a5;
+            border-radius: 8px;
+            padding: 12px 16px;
+            text-align: right;
+        }
+
+        .eta-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .eta-date {
+            font-size: 16px;
+            font-weight: 600;
+            color: #991b1b;
+            margin-bottom: 2px;
+        }
+
+        .eta-changed {
+            font-size: 12px;
+            color: #d97706;
+            font-weight: 500;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: #e5e5e5;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f59e0b, #d97706);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .timeline {
+            margin-top: 24px;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 16px;
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .timeline-item:not(:last-child)::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 32px;
+            bottom: -24px;
+            width: 2px;
+            background: #e5e5e5;
+        }
+
+        .timeline-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 14px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .timeline-dot.completed {
+            background: #e8f5e9;
+            border: 2px solid #4caf50;
+            color: #2e7d32;
+        }
+
+        .timeline-dot.on-hold {
+            background: #fff3e0;
+            border: 2px solid #f59e0b;
+            color: #d97706;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 0 8px rgba(245, 158, 11, 0);
+            }
+        }
+
+        .timeline-dot.pending {
+            background: #f5f5f5;
+            border: 2px solid #e5e5e5;
+            color: #999;
+        }
+
+        .timeline-content {
+            flex: 1;
+            padding-bottom: 8px;
+        }
+
+        .timeline-content.on-hold {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: -8px;
+        }
+
+        .timeline-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .timeline-date {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .timeline-description {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .timeline-alert {
+            background: #fef2f2;
+            border-left: 3px solid #dc2626;
+            border-radius: 4px;
+            padding: 12px;
+            margin-top: 12px;
+            font-size: 13px;
+            color: #991b1b;
+        }
+
+        .section-divider {
+            margin: 24px 0;
+            border: 0;
+            border-top: 1px solid #e5e5e5;
+        }
+
+        .required-actions-section {
+            margin-top: 24px;
+        }
+
+        .section-subtitle {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 12px;
+        }
+
+        .action-card {
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .action-card.urgent {
+            border-color: #fca5a5;
+            background: #fef2f2;
+        }
+
+        .action-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .action-card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a1a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-card-badge {
+            background: #fef3e6;
+            color: #d97706;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .action-card-description {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .action-card-requirement {
+            background: #f9fafb;
+            border: 1px solid #e5e5e5;
+            border-radius: 4px;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #1a1a1a;
+        }
+
+        .action-card-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #e5e5e5;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f9fafb;
+        }
+
+        .footer-warning {
+            font-size: 13px;
+            color: #d97706;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #666;
+            border: 1px solid #e5e5e5;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: #f5f5f5;
+        }
+
+        .btn-primary {
+            background: #528FF0;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #3d7ad6;
+        }
+
+        .pending-duration {
+            font-size: 12px;
+            color: #d97706;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">Payment Methods</h1>
+            <p class="page-subtitle">Visa, Master, Amex</p>
+        </div>
+
+        <div class="alert-banner">
+            <span class="alert-icon">⚠️</span>
+            <span class="alert-text">Request for Payment methods is unavailable as your account is not enabled to accept transactions.</span>
+        </div>
+
+        <div class="cards-container">
+            <h2 class="section-title">Domestic Cards</h2>
+
+            <!-- Visa - Activated -->
+            <div class="payment-method">
+                <div class="payment-method-left">
+                    <div class="payment-icon icon-visa">VISA</div>
+                    <div class="payment-info">
+                        <div class="payment-name">Visa Cards</div>
+                        <div class="payment-status">
+                            <span class="status-badge activated">✓ Activated</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-activated">✓ Activated</button>
+            </div>
+
+            <!-- MasterCard - Activated -->
+            <div class="payment-method">
+                <div class="payment-method-left">
+                    <div class="payment-icon icon-mastercard">MC</div>
+                    <div class="payment-info">
+                        <div class="payment-name">MasterCard</div>
+                        <div class="payment-status">
+                            <span class="status-badge activated">✓ Activated</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-activated">✓ Activated</button>
+            </div>
+
+            <!-- Rupay - Activated -->
+            <div class="payment-method">
+                <div class="payment-method-left">
+                    <div class="payment-icon icon-rupay">RUPAY</div>
+                    <div class="payment-info">
+                        <div class="payment-name">Rupay Cards</div>
+                        <div class="payment-status">
+                            <span class="status-badge activated">✓ Activated</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-activated">✓ Activated</button>
+            </div>
+
+            <!-- Amex - Requested (Bank Review) -->
+            <div class="payment-method requested">
+                <div class="payment-method-left">
+                    <div class="payment-icon icon-amex">AMEX</div>
+                    <div class="payment-info">
+                        <div class="payment-name">Amex Cards</div>
+                        <div class="payment-status">
+                            <span class="status-badge requested">🔄 Requested</span>
+                            <span>• Bank Review</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-view-status" onclick="openAmexModal()">View Status</button>
+            </div>
+
+            <!-- Diners - Requested (On Hold - Multiple ARIs) -->
+            <div class="payment-method requested">
+                <div class="payment-method-left">
+                    <div class="payment-icon icon-diners">DC</div>
+                    <div class="payment-info">
+                        <div class="payment-name">Diners Club</div>
+                        <div class="payment-status">
+                            <span class="status-badge requested">⏸️ On Hold</span>
+                            <span>• Action Required</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-view-status" onclick="openDinersModal()">View Status</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Amex Status Modal (Normal Progress) -->
+    <div class="modal-overlay" id="amexModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div class="modal-title-section">
+                    <div class="modal-title">American Express Card Request Status</div>
+                    <div class="modal-subtitle">Request ID: MIR-2025-00123 • Submitted on Dec 2, 2025</div>
+                </div>
+                <button class="modal-close" onclick="closeModal('amexModal')">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <div class="status-alert" style="background: #e3f2fd; border-color: #90caf9;">
+                    <div class="status-alert-header">
+                        <span class="status-alert-icon">🔄</span>
+                        <div class="status-alert-title" style="color: #1565c0;">Request In Progress</div>
+                    </div>
+                    <div class="status-alert-text" style="color: #1565c0;">
+                        Your American Express request is currently being reviewed by the bank. Expected completion: Dec 26, 2025.
+                    </div>
+                </div>
+
+                <div class="status-overview">
+                    <div class="status-header">
+                        <div class="current-status">
+                            <div class="status-badge-large" style="background: #e3f2fd; color: #1565c0;">🔄 In Progress</div>
+                            <span>Step 3 of 5 - Bank Approval</span>
+                        </div>
+                        <div class="eta-box" style="border-color: #90caf9;">
+                            <div class="eta-label">Expected Completion</div>
+                            <div class="eta-date" style="color: #1565c0;">Dec 26, 2025</div>
+                        </div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" style="width: 60%; background: linear-gradient(90deg, #528FF0, #3d7ad6);"></div>
+                    </div>
+                </div>
+
+                <p style="font-size: 14px; color: #666;">All requirements have been met. Your request is progressing smoothly through bank approval.</p>
+            </div>
+
+            <div class="modal-footer">
+                <div></div>
+                <div class="footer-buttons">
+                    <button class="btn-secondary" onclick="closeModal('amexModal')">Close</button>
+                    <button class="btn-primary">Contact Support</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Diners Status Modal (Multiple ARIs - On Hold) -->
+    <div class="modal-overlay" id="dinersModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div class="modal-title-section">
+                    <div class="modal-title">Diners Club Card Request Status</div>
+                    <div class="modal-subtitle">Request ID: MIR-2025-00156 • Submitted on Dec 4, 2025</div>
+                </div>
+                <button class="modal-close" onclick="closeModal('dinersModal')">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Alert: Multiple ARIs -->
+                <div class="status-alert">
+                    <div class="status-alert-header">
+                        <span class="status-alert-icon">⚠️</span>
+                        <div class="status-alert-title">Action Required: 3 Items Need Your Attention</div>
+                    </div>
+                    <div class="status-alert-text">
+                        Your request is currently on hold. Please provide the missing information below to continue processing. Your timeline has been extended by 9 days due to pending actions.
+                    </div>
+                    <div class="ari-list">
+                        <!-- ARI 1 -->
+                        <div class="ari-item">
+                            <div class="ari-item-header">
+                                <span class="ari-item-title">1. Privacy Policy Page Missing</span>
+                                <span class="ari-pending-badge">Pending 3 days</span>
+                            </div>
+                            <div class="ari-item-description">
+                                Your website does not have a valid Privacy Policy page. This is a mandatory compliance requirement. Please ensure your Privacy Policy page includes: data collection practices, user rights, contact information for privacy concerns.
+                            </div>
+                            <div class="ari-item-action">
+                                <button class="btn-upload">Upload Privacy Policy Screenshot</button>
+                                <span style="font-size: 12px; color: #666;">or provide URL</span>
+                            </div>
+                        </div>
+
+                        <!-- ARI 2 -->
+                        <div class="ari-item">
+                            <div class="ari-item-header">
+                                <span class="ari-item-title">2. Invalid Refund Policy Page</span>
+                                <span class="ari-pending-badge">Pending 3 days</span>
+                            </div>
+                            <div class="ari-item-description">
+                                The Cancellation and Refund Policy page you provided is incomplete or doesn't contain required information. Required: refund eligibility criteria, refund processing timeline, contact information for refund queries.
+                            </div>
+                            <div class="ari-item-action">
+                                <button class="btn-upload">Upload Corrected Page</button>
+                                <span style="font-size: 12px; color: #666;">or update URL</span>
+                            </div>
+                        </div>
+
+                        <!-- ARI 3 -->
+                        <div class="ari-item">
+                            <div class="ari-item-header">
+                                <span class="ari-item-title">3. Contact Us Page Not Accessible</span>
+                                <span class="ari-pending-badge">Pending 3 days</span>
+                            </div>
+                            <div class="ari-item-description">
+                                The Contact Us page URL you provided returns a 404 error or doesn't display contact information. Required: business email, phone number, physical address (if applicable), and contact form or alternative contact method.
+                            </div>
+                            <div class="ari-item-action">
+                                <button class="btn-upload">Upload Contact Page Screenshot</button>
+                                <span style="font-size: 12px; color: #666;">or provide correct URL</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Overview -->
+                <div class="status-overview">
+                    <div class="status-header">
+                        <div class="current-status">
+                            <div class="status-badge-large status-on-hold">⏸️ On Hold</div>
+                            <span>Step 1 of 5 - Internal Review</span>
+                        </div>
+                        <div class="eta-box">
+                            <div class="eta-label">Expected Completion</div>
+                            <div class="eta-date">Dec 22, 2025</div>
+                            <div class="eta-changed">Delayed from Dec 13 (+9 days)</div>
+                        </div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" style="width: 15%;"></div>
+                    </div>
+                </div>
+
+                <!-- Timeline -->
+                <div class="timeline">
+                    <!-- Step 1: Submitted -->
+                    <div class="timeline-item">
+                        <div class="timeline-dot completed">✓</div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">✅ Request Submitted</div>
+                            <div class="timeline-date">Dec 4, 2025 at 3:45 PM</div>
+                            <div class="timeline-description">Your Diners Club card request has been successfully submitted and is now being processed.</div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Internal Review (On Hold) -->
+                    <div class="timeline-item">
+                        <div class="timeline-dot on-hold">⏸️</div>
+                        <div class="timeline-content on-hold">
+                            <div class="timeline-title">⏸️ Internal Review - On Hold</div>
+                            <div class="timeline-date">Started on Dec 5, 2025</div>
+                            <div class="timeline-description">Our compliance team identified missing or invalid website pages during verification. Please provide the required information to continue.</div>
+
+                            <div class="timeline-alert">
+                                <strong>⚠️ Timeline Impact:</strong> Each 24 hours without response adds +1 day to your ETA. You have 3 pending actions for 3 days each, adding a total of +9 days to your original timeline.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Bank Submission -->
+                    <div class="timeline-item">
+                        <div class="timeline-dot pending">⏳</div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">⏳ Submit to Diners Club</div>
+                            <div class="timeline-description">Once internal review is complete, we'll submit your request to Diners Club for approval.</div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Bank Review -->
+                    <div class="timeline-item">
+                        <div class="timeline-dot pending">⏳</div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">⏳ Bank Review & Approval</div>
+                            <div class="timeline-description">Diners Club will review your application for compliance and risk assessment.</div>
+                        </div>
+                    </div>
+
+                    <!-- Step 5: Terminal Provisioning -->
+                    <div class="timeline-item">
+                        <div class="timeline-dot pending">⏳</div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">⏳ Terminal Provisioning</div>
+                            <div class="timeline-description">Configure payment terminals to accept Diners Club cards.</div>
+                        </div>
+                    </div>
+
+                    <!-- Step 6: Activation -->
+                    <div class="timeline-item">
+                        <div class="timeline-dot pending">⏳</div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">⏳ Activation & Testing</div>
+                            <div class="timeline-description">Final testing and activation of Diners Club card acceptance.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="section-divider">
+
+                <!-- Required Actions Details -->
+                <div class="required-actions-section">
+                    <div class="section-subtitle">📋 Detailed Action Items</div>
+
+                    <!-- Action 1: Privacy Policy -->
+                    <div class="action-card urgent">
+                        <div class="action-card-header">
+                            <div class="action-card-title">
+                                <span>🔒</span>
+                                <span>Privacy Policy Page</span>
+                            </div>
+                            <span class="action-card-badge">Mandatory</span>
+                        </div>
+                        <div class="action-card-description">
+                            Your website must have a publicly accessible Privacy Policy page that complies with data protection regulations.
+                        </div>
+                        <div class="action-card-requirement">
+                            <strong>Required elements:</strong>
+                            <ul style="margin: 8px 0 0 20px; font-size: 13px; color: #666;">
+                                <li>Types of data collected from users</li>
+                                <li>How data is used and stored</li>
+                                <li>User rights (access, deletion, etc.)</li>
+                                <li>Contact information for privacy concerns</li>
+                            </ul>
+                        </div>
+                        <div class="pending-duration">⏱️ Pending for: 3 days (72 hours) • +3 days added to ETA</div>
+                        <div class="action-card-buttons">
+                            <button class="btn-primary">Provide URL</button>
+                            <button class="btn-secondary">Upload Screenshot</button>
+                            <button class="btn-secondary">Need Help?</button>
+                        </div>
+                    </div>
+
+                    <!-- Action 2: Refund Policy -->
+                    <div class="action-card urgent">
+                        <div class="action-card-header">
+                            <div class="action-card-title">
+                                <span>💰</span>
+                                <span>Cancellation & Refund Policy</span>
+                            </div>
+                            <span class="action-card-badge">Mandatory</span>
+                        </div>
+                        <div class="action-card-description">
+                            The Refund Policy page you provided is incomplete. It must clearly state your refund terms and process.
+                        </div>
+                        <div class="action-card-requirement">
+                            <strong>Required elements:</strong>
+                            <ul style="margin: 8px 0 0 20px; font-size: 13px; color: #666;">
+                                <li>Refund eligibility criteria (timeframe, conditions)</li>
+                                <li>Refund processing time (e.g., "7-10 business days")</li>
+                                <li>Cancellation process and deadlines</li>
+                                <li>Contact information for refund-related queries</li>
+                            </ul>
+                        </div>
+                        <div class="pending-duration">⏱️ Pending for: 3 days (72 hours) • +3 days added to ETA</div>
+                        <div class="action-card-buttons">
+                            <button class="btn-primary">Update URL</button>
+                            <button class="btn-secondary">Upload New Screenshot</button>
+                        </div>
+                    </div>
+
+                    <!-- Action 3: Contact Page -->
+                    <div class="action-card urgent">
+                        <div class="action-card-header">
+                            <div class="action-card-title">
+                                <span>📧</span>
+                                <span>Contact Us Page</span>
+                            </div>
+                            <span class="action-card-badge">Mandatory</span>
+                        </div>
+                        <div class="action-card-description">
+                            The Contact Us page URL returns an error (404). Please provide a working page with valid contact information.
+                        </div>
+                        <div class="action-card-requirement">
+                            <strong>Required elements:</strong>
+                            <ul style="margin: 8px 0 0 20px; font-size: 13px; color: #666;">
+                                <li>Business email address</li>
+                                <li>Phone number / WhatsApp number</li>
+                                <li>Physical address (if you have a store/office)</li>
+                                <li>Contact form or alternative contact method</li>
+                            </ul>
+                        </div>
+                        <div class="pending-duration">⏱️ Pending for: 3 days (72 hours) • +3 days added to ETA</div>
+                        <div class="action-card-buttons">
+                            <button class="btn-primary">Provide Correct URL</button>
+                            <button class="btn-secondary">Upload Screenshot</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <div class="footer-warning">
+                    <span>⚠️</span>
+                    <span>Each additional day without response adds +1 day to your timeline</span>
+                </div>
+                <div class="footer-buttons">
+                    <button class="btn-secondary" onclick="closeModal('dinersModal')">Close</button>
+                    <button class="btn-primary">Complete All Actions</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openAmexModal() {
+            document.getElementById('amexModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function openDinersModal() {
+            document.getElementById('dinersModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('amexModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal('amexModal');
+            }
+        });
+
+        document.getElementById('dinersModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal('dinersModal');
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal('amexModal');
+                closeModal('dinersModal');
+            }
+        });
+    </script>
+</body>
+</html>
